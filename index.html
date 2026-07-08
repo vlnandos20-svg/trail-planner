@@ -1083,54 +1083,54 @@ function drawWildlife(animals) {
 // ── PUB & CAFE DATA ────────────────────────────────────────────────────────
 var PUB_DATA = {
   1: [ // Seven Sisters & Friston Forest
-    {lat:50.7571,lng:0.2178,name:"Tiger Inn",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green. Harvey's ales and Beachy Head brewery beers. Busy in summer — booking recommended. Half a mile from Birling Gap.",google:"4.1",source:"Google"},
-    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café right on the Seven Sisters. Hot food, cakes and drinks with views to France on a clear day. Open daily except Christmas.",google:"4.3",source:"National Trust"},
-    {lat:50.7568,lng:0.1589,name:"Cuckmere Inn",type:"pub",rating:"4.2★",desc:"Traditional pub overlooking the Cuckmere Valley and river. Perfect lunch stop mid-walk. River views from the beer garden.",google:"4.2",source:"Google"}
+    {lat:50.7571,lng:0.2178,name:"Tiger Inn",address:"The Green, East Dean, Eastbourne BN20 0DA",website:"https://www.beachyhead.org.uk/the-tiger-inn/",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green. Harvey's ales and Beachy Head brewery beers. Busy in summer — booking recommended. Half a mile from Birling Gap.",google:"4.1",source:"Google"},
+    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",address:"Birling Gap, East Dean, Eastbourne BN20 0AB",website:"https://www.nationaltrust.org.uk/visit/sussex/birling-gap-and-the-seven-sisters",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café right on the Seven Sisters. Hot food, cakes and drinks with views to France on a clear day. Open daily except Christmas.",google:"4.3",source:"National Trust"},
+    {lat:50.7568,lng:0.1589,name:"Cuckmere Inn",address:"Exceat, Seaford BN25 4AB",website:null,type:"pub",rating:"4.2★",desc:"Traditional pub overlooking the Cuckmere Valley and river. Perfect lunch stop mid-walk. River views from the beer garden.",google:"4.2",source:"Google"}
   ],
   2: [ // Amberley to Arundel
-    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food and a lovely garden. Walkers warmly welcomed.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
-    {lat:50.9085,lng:-0.5320,name:"The Black Horse",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village. A step up from a regular pub — locally sourced ingredients and an excellent wine list. Stunning raised garden.",google:"4.4",source:"Google"},
-    {lat:50.8748,lng:-0.5415,name:"The Sportsman",type:"pub",rating:"4.2★",desc:"Community-owned 17th-century inn with conservatory overlooking Amberley Wild Brooks. Three changing local ales. CAMRA Branch Pub of the Year 2026. Dog friendly.",google:"4.2",source:"CAMRA"}
+    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",address:"Houghton Bridge, Amberley BN18 9LR",website:"https://www.bridgeinnamberley.com/",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food and a lovely garden. Walkers warmly welcomed.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
+    {lat:50.9085,lng:-0.5320,name:"The Black Horse",address:"High Street, Amberley BN18 9NL",website:"https://www.blackhorse-pub.com/",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village. A step up from a regular pub — locally sourced ingredients and an excellent wine list. Stunning raised garden.",google:"4.4",source:"Google"},
+    {lat:50.8748,lng:-0.5415,name:"The Sportsman",address:"Crossgates, Amberley BN18 9NR",website:null,type:"pub",rating:"4.2★",desc:"Community-owned 17th-century inn with conservatory overlooking Amberley Wild Brooks. Three changing local ales. CAMRA Branch Pub of the Year 2026. Dog friendly.",google:"4.2",source:"CAMRA"}
   ],
   3: [ // Amberley Circular
-    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food, lovely garden. Walkers always welcome.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
-    {lat:50.9085,lng:-0.5320,name:"The Black Horse",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village with a stunning raised garden. Locally sourced seasonal food, excellent wine list.",google:"4.4",source:"Google"},
-    {lat:50.9085,lng:-0.5320,name:"Amberley Tea Rooms",type:"cafe",rating:"4.3★",desc:"Excellent reputation for cream teas and light lunches in the heart of Amberley village. Perfect end to a walk.",google:"4.3",source:"Google"}
+    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",address:"Houghton Bridge, Amberley BN18 9LR",website:"https://www.bridgeinnamberley.com/",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food, lovely garden. Walkers always welcome.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
+    {lat:50.9085,lng:-0.5320,name:"The Black Horse",address:"High Street, Amberley BN18 9NL",website:"https://www.blackhorse-pub.com/",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village with a stunning raised garden. Locally sourced seasonal food, excellent wine list.",google:"4.4",source:"Google"},
+    {lat:50.9085,lng:-0.5320,name:"Amberley Tea Rooms",address:"High Street, Amberley BN18 9NL",website:null,type:"cafe",rating:"4.3★",desc:"Excellent reputation for cream teas and light lunches in the heart of Amberley village. Perfect end to a walk.",google:"4.3",source:"Google"}
   ],
   4: [ // Chiltern Link — pubs directly on or beside the route
     {lat:51.7053,lng:-0.6109,name:"The Queen's Head",type:"pub",rating:"4.2★",desc:"Right in Chesham town centre, 2 minutes from the station — perfect for a pre-walk pint or coffee. Traditional local with real fires, exploring historic Church Street.",google:"4.2",source:"Google"},
-    {lat:51.7290,lng:-0.6832,name:"The Golden Eagle, Ashley Green",type:"pub",rating:"4.4★",desc:"Sits directly on the Chiltern Heritage Trail at the halfway point of the walk. Authentic olde-worlde pub in the heart of Ashley Green village, dog-friendly with a new outdoor smokehouse and heated garden. Described as the perfect walkers stop on this exact route.",google:"4.4",source:"Chilterns National Landscape / chilterns.org.uk"},
-    {lat:51.7051,lng:-0.6112,name:"The Queen's Head, Chesham",type:"pub",rating:"4.2★",desc:"Right in Chesham town centre 2 minutes from the station — perfect finish to the walk. Traditional local with real fires on historic Church Street.",google:"4.2",source:"Google"}
+    {lat:51.7290,lng:-0.6832,name:"The Golden Eagle, Ashley Green",address:"Ashley Green, Chesham HP5 3PJ",website:"https://www.thegoldeneaglepub.com/",type:"pub",rating:"4.4★",desc:"Sits directly on the Chiltern Heritage Trail at the halfway point of the walk. Authentic olde-worlde pub in the heart of Ashley Green village, dog-friendly with a new outdoor smokehouse and heated garden. Described as the perfect walkers stop on this exact route.",google:"4.4",source:"Chilterns National Landscape / chilterns.org.uk"},
+    {lat:51.7051,lng:-0.6112,name:"The Queen's Head, Chesham",address:"Church Street, Chesham HP5 1HH",website:null,type:"pub",rating:"4.2★",desc:"Right in Chesham town centre 2 minutes from the station — perfect finish to the walk. Traditional local with real fires on historic Church Street.",google:"4.2",source:"Google"}
   ],
   5: [ // Runnymede to Windsor
-    {lat:51.4419,lng:-0.5519,name:"The Bells of Ouzeley",type:"pub",rating:"4.2★",desc:"Riverside pub in Old Windsor — an idyllic Thames-side stop. Charming setting by the water, classic pub food and a good beer garden.",google:"4.2",source:"Google"},
-    {lat:51.4855,lng:-0.6075,name:"The Two Brewers",type:"pub",rating:"4.3★",desc:"On Park Street at the entrance to Windsor's Long Walk — one of Windsor's most beloved pubs. Small but perfectly formed, welcoming to walkers and dogs.",google:"4.3",source:"Google / Windsor Council"},
-    {lat:51.4855,lng:-0.6078,name:"The Boatman",type:"pub",rating:"4.2★",desc:"Serving Windsor since 1829 with waterfront views of the Thames. Formerly The King's Head, locals know it as The Donkey House. Seasonal menus, great Thames views.",google:"4.2",source:"Google"}
+    {lat:51.4419,lng:-0.5519,name:"The Bells of Ouzeley",address:"Straight Road, Old Windsor SL4 2RR",website:null,type:"pub",rating:"4.2★",desc:"Riverside pub in Old Windsor — an idyllic Thames-side stop. Charming setting by the water, classic pub food and a good beer garden.",google:"4.2",source:"Google"},
+    {lat:51.4855,lng:-0.6075,name:"The Two Brewers",address:"Park Street, Windsor SL4 1LB",website:"https://www.twobrewerswindsor.co.uk/",type:"pub",rating:"4.3★",desc:"On Park Street at the entrance to Windsor's Long Walk — one of Windsor's most beloved pubs. Small but perfectly formed, welcoming to walkers and dogs.",google:"4.3",source:"Google / Windsor Council"},
+    {lat:51.4855,lng:-0.6078,name:"The Boatman",address:"Thames Side, Windsor SL4 1QN",website:null,type:"pub",rating:"4.2★",desc:"Serving Windsor since 1829 with waterfront views of the Thames. Formerly The King's Head, locals know it as The Donkey House. Seasonal menus, great Thames views.",google:"4.2",source:"Google"}
   ],
   6: [ // Knole Park
-    {lat:51.2707,lng:0.1930,name:"The White Hart",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the perfect post-walk pub. 300-year-old coaching inn with a superb cask ale selection. Frequently cited as a favourite after a deer park walk.",google:"4.4",source:"The Kent Tourist / Google"},
-    {lat:51.2707,lng:0.1935,name:"NT Café at Knole House",type:"cafe",rating:"4.2★",desc:"National Trust café inside Knole House — excellent stop if you're visiting the house. Good coffee, cakes and light lunches in a historic setting.",google:"4.2",source:"National Trust"},
-    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",type:"pub",rating:"4.5★",desc:"Right on the doorstep of Knole Park. Named one of Kent's best pubs — legendary Sunday roasts, double smashburgers, fresh fish. Run with genuine warmth.",google:"4.5",source:"Kent Online"}
+    {lat:51.2707,lng:0.1930,name:"The White Hart",address:"Tonbridge Road, Sevenoaks TN13 1SG",website:"https://www.brunningandprice.co.uk/whitehart/",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the perfect post-walk pub. 300-year-old coaching inn with a superb cask ale selection. Frequently cited as a favourite after a deer park walk.",google:"4.4",source:"The Kent Tourist / Google"},
+    {lat:51.2707,lng:0.1935,name:"NT Café at Knole House",address:"Knole, Sevenoaks TN15 0RP",website:"https://www.nationaltrust.org.uk/visit/kent/knole",type:"cafe",rating:"4.2★",desc:"National Trust café inside Knole House — excellent stop if you're visiting the house. Good coffee, cakes and light lunches in a historic setting.",google:"4.2",source:"National Trust"},
+    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",address:"Godden Green, Sevenoaks TN15 0JJ",website:"https://www.bucksheadsevenoaks.co.uk/",type:"pub",rating:"4.5★",desc:"Right on the doorstep of Knole Park. Named one of Kent's best pubs — legendary Sunday roasts, double smashburgers, fresh fish. Run with genuine warmth.",google:"4.5",source:"Kent Online"}
   ],
   7: [ // Woldingham
-    {lat:51.2900,lng:-0.0516,name:"Botley Hill Farmhouse",type:"pub",rating:"4.4★",desc:"Sits at the highest point of the North Downs Way with panoramic views. Part of the Titsey Estate — serves their own Marmaduke Farmhouse Cider, estate-reared beef and venison. Highly rated.",google:"4.4",source:"Surrey Live / Google"},
-    {lat:51.2612,lng:-0.0423,name:"The Old Ship, Tatsfield",type:"pub",rating:"4.2★",desc:"Traditional village pub on the green in Tatsfield, sitting up on the North Downs. Retains all the character of an old English pub with a lovely garden.",google:"4.2",source:"Google"},
-    {lat:51.2657,lng:-0.0550,name:"The Bull Inn, Limpsfield",type:"pub",rating:"4.1★",desc:"Traditional free house in Limpsfield on the North Downs. Cosy atmosphere, good food and well-kept ales. Dog friendly.",google:"4.1",source:"Google"}
+    {lat:51.2900,lng:-0.0516,name:"Botley Hill Farmhouse",address:"Limpsfield Road, Warlingham CR6 9QH",website:"https://www.botleyhill-farmhouse.co.uk/",type:"pub",rating:"4.4★",desc:"Sits at the highest point of the North Downs Way with panoramic views. Part of the Titsey Estate — serves their own Marmaduke Farmhouse Cider, estate-reared beef and venison. Highly rated.",google:"4.4",source:"Surrey Live / Google"},
+    {lat:51.2612,lng:-0.0423,name:"The Old Ship, Tatsfield",address:"Ship Hill, Tatsfield TN16 2AG",website:null,type:"pub",rating:"4.2★",desc:"Traditional village pub on the green in Tatsfield, sitting up on the North Downs. Retains all the character of an old English pub with a lovely garden.",google:"4.2",source:"Google"},
+    {lat:51.2657,lng:-0.0550,name:"The Bull Inn, Limpsfield",address:"High Street, Limpsfield RH8 0DR",website:null,type:"pub",rating:"4.1★",desc:"Traditional free house in Limpsfield on the North Downs. Cosy atmosphere, good food and well-kept ales. Dog friendly.",google:"4.1",source:"Google"}
   ],
   8: [ // Sevenoaks Circular
-    {lat:51.2707,lng:0.1930,name:"The White Hart",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the classic post-walk destination in Sevenoaks. 300-year-old coaching inn with outstanding cask ales.",google:"4.4",source:"The Kent Tourist / Google"},
-    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",type:"pub",rating:"4.5★",desc:"Just off the Knole Park walks — one of Kent's best pubs. Legendary roasts, fresh fish, genuinely excellent cooking in a warm atmosphere.",google:"4.5",source:"Kent Online"},
-    {lat:51.3053,lng:0.1701,name:"George & Dragon, Chipstead",type:"pub",rating:"4.5★",desc:"Celebrated 16th-century gastropub in Chipstead. Sevenoaks Pub of the Year 2020. Seasonal modern British menu, local farms, rustic beams and roaring fires.",google:"4.5",source:"Visit Kent Guide"}
+    {lat:51.2707,lng:0.1930,name:"The White Hart",address:"Tonbridge Road, Sevenoaks TN13 1SG",website:"https://www.brunningandprice.co.uk/whitehart/",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the classic post-walk destination in Sevenoaks. 300-year-old coaching inn with outstanding cask ales.",google:"4.4",source:"The Kent Tourist / Google"},
+    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",address:"Godden Green, Sevenoaks TN15 0JJ",website:"https://www.bucksheadsevenoaks.co.uk/",type:"pub",rating:"4.5★",desc:"Just off the Knole Park walks — one of Kent's best pubs. Legendary roasts, fresh fish, genuinely excellent cooking in a warm atmosphere.",google:"4.5",source:"Kent Online"},
+    {lat:51.3053,lng:0.1701,name:"George & Dragon, Chipstead",address:"39 High Street, Chipstead TN13 2RW",website:"https://www.georgeanddragonchipstead.com/",type:"pub",rating:"4.5★",desc:"Celebrated 16th-century gastropub in Chipstead. Sevenoaks Pub of the Year 2020. Seasonal modern British menu, local farms, rustic beams and roaring fires.",google:"4.5",source:"Visit Kent Guide"}
   ],
   9: [ // Seaford to Eastbourne
     {lat:50.7711,lng:0.0959,name:"Seaford pubs & cafés",type:"cafe",rating:"4.0★",desc:"Several cafés and pubs in Seaford town for pre-walk fuel — Old Plough Seaford highly rated. Convenient from Seaford station.",google:"4.0",source:"Google"},
-    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café mid-route on the Seven Sisters. Hot food, cakes and unbeatable Channel views. Perfect halfway stop.",google:"4.3",source:"National Trust"},
-    {lat:50.7571,lng:0.2178,name:"Tiger Inn",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green just off the cliff path. Harvey's ales and Beachy Head brewery beers.",google:"4.1",source:"Google"}
+    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",address:"Birling Gap, East Dean, Eastbourne BN20 0AB",website:"https://www.nationaltrust.org.uk/visit/sussex/birling-gap-and-the-seven-sisters",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café mid-route on the Seven Sisters. Hot food, cakes and unbeatable Channel views. Perfect halfway stop.",google:"4.3",source:"National Trust"},
+    {lat:50.7571,lng:0.2178,name:"Tiger Inn",address:"The Green, East Dean, Eastbourne BN20 0DA",website:"https://www.beachyhead.org.uk/the-tiger-inn/",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green just off the cliff path. Harvey's ales and Beachy Head brewery beers.",google:"4.1",source:"Google"}
   ],
   10: [ // Tunbridge Wells Circular
-    {lat:51.1623,lng:0.2520,name:"The Hare, Langton Green",type:"pub",rating:"4.4★",desc:"Beautiful pub on Langton Green village with a huge garden — the classic starting point for Tunbridge Wells circular walks. Welcoming to walkers, excellent food.",google:"4.4",source:"Visit Tunbridge Wells"},
-    {lat:51.1631,lng:0.2786,name:"George & Dragon, Speldhurst",type:"pub",rating:"4.5★",desc:"Award-winning 13th-century pub in Speldhurst village. Seasonal menu from local Kent farms. One of the finest country pubs in SE England — booking essential.",google:"4.5",source:"Visit Kent"},
-    {lat:51.1093,lng:0.2382,name:"Crown Inn, Groombridge",type:"pub",rating:"4.3★",desc:"Historic pub in the charming village of Groombridge, next to Groombridge Place. Real ales, good food and a lovely garden by the stream.",google:"4.3",source:"AllTrails / Google"}
+    {lat:51.1623,lng:0.2520,name:"The Hare, Langton Green",address:"Langton Road, Langton Green TN3 0JA",website:"https://www.brunningandprice.co.uk/hare/",type:"pub",rating:"4.4★",desc:"Beautiful pub on Langton Green village with a huge garden — the classic starting point for Tunbridge Wells circular walks. Welcoming to walkers, excellent food.",google:"4.4",source:"Visit Tunbridge Wells"},
+    {lat:51.1631,lng:0.2786,name:"George & Dragon, Speldhurst",address:"Speldhurst Hill, Speldhurst TN3 0NN",website:"https://www.sankeys.co.uk/gnd",type:"pub",rating:"4.5★",desc:"Award-winning 13th-century pub in Speldhurst village. Seasonal menu from local Kent farms. One of the finest country pubs in SE England — booking essential.",google:"4.5",source:"Visit Kent"},
+    {lat:51.1093,lng:0.2382,name:"Crown Inn, Groombridge",address:"The Walk, Groombridge TN3 9QH",website:null,type:"pub",rating:"4.3★",desc:"Historic pub in the charming village of Groombridge, next to Groombridge Place. Real ales, good food and a lovely garden by the stream.",google:"4.3",source:"AllTrails / Google"}
   ]
 };
 
@@ -1164,11 +1164,15 @@ function drawPubs(routeId) {
       html: '<div style="width:32px;height:32px;border-radius:50%;background:' + (isPub ? '#f5e6c0' : '#e8f0e8') + ';border:2.5px solid ' + (isPub ? '#c08030' : '#2d7a27') + ';box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">' + (isPub ? '🍺' : '☕') + '</div>',
       iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
     });
+    var mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(p.name + ', ' + (p.address||''));
+    var websiteLink = p.website ? '<a href="' + p.website + '" target="_blank" style="display:inline-block;margin-top:6px;margin-right:6px;padding:4px 10px;background:#2d5a27;color:#fff;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none">🌐 Website</a>' : '';
+    var mapsLink = '<a href="' + mapsUrl + '" target="_blank" style="display:inline-block;margin-top:6px;padding:4px 10px;background:#1a3a7a;color:#fff;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none">📍 Google Maps</a>';
     var popup = '<div class="pub-popup">' +
       '<div class="pub-popup-type">' + (isPub ? '🍺 Pub' : '☕ Café') + '</div>' +
       '<div class="pub-popup-name">' + p.name + '</div>' +
       '<div class="pub-popup-rating">★ ' + p.rating + ' · ' + p.source + '</div>' +
       '<div class="pub-popup-desc">' + p.desc + '</div>' +
+      '<div>' + websiteLink + mapsLink + '</div>' +
     '</div>';
     pubLayers.push(L.marker([p.lat, p.lng], {icon: icon, zIndexOffset: 80}).bindPopup(popup, {maxWidth: 260}).addTo(map));
   });
@@ -1271,8 +1275,66 @@ function filterPlants(type, btn) {
 var speciesPhotoCache = {};
 
 // Override Wikipedia article titles for species where common name doesn't match
-// Wikipedia article name overrides for all species
-var DIRECT_IMAGES = {}; // Reserved for future use
+// Portrait images for birds and animals - ensures head is always visible
+var DIRECT_IMAGES = {
+  // Birds - head portraits from Wikimedia Commons
+  'Barn Owl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Tyto_alba_-_British_Wildlife_Centre%2C_Surrey%2C_England-8a_%281%29.jpg/400px-Tyto_alba_-_British_Wildlife_Centre%2C_Surrey%2C_England-8a_%281%29.jpg',
+  'Red Kite': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Red_kite_head.jpg/400px-Red_kite_head.jpg',
+  'Peregrine Falcon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Peregrine_falcon_%28Australia%29.jpg/400px-Peregrine_falcon_%28Australia%29.jpg',
+  'Skylark': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Eurasian_Skylark_%28Alauda_arvensis%29_%282%29.jpg/400px-Eurasian_Skylark_%28Alauda_arvensis%29_%282%29.jpg',
+  'Kingfisher': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Common_kingfisher_alcedo_atthis.jpg/400px-Common_kingfisher_alcedo_atthis.jpg',
+  'Grey Heron': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Graureiher_Ardea_cinerea.jpg/400px-Graureiher_Ardea_cinerea.jpg',
+  'Tawny Owl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Strix_aluco_portrait.jpg/400px-Strix_aluco_portrait.jpg',
+  'Nightingale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Luscinia_megarhynchos_Istria.jpg/400px-Luscinia_megarhynchos_Istria.jpg',
+  'Sparrowhawk': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Accipiter_nisus_2_%28Marek_Szczepanek%29.jpg/400px-Accipiter_nisus_2_%28Marek_Szczepanek%29.jpg',
+  'Great Spotted Woodpecker': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Dendrocopos_major_2.jpg/400px-Dendrocopos_major_2.jpg',
+  'Linnet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Carduelis_cannabina_portrait.jpg/400px-Carduelis_cannabina_portrait.jpg',
+  'Little Egret': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Little_Egret_arp.jpg/400px-Little_Egret_arp.jpg',
+  'Great Crested Grebe': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Podiceps_cristatus_-Warnham_Nature_Reserve%2C_Horsham%2C_England-8.jpg/400px-Podiceps_cristatus_-Warnham_Nature_Reserve%2C_Horsham%2C_England-8.jpg',
+  'Common Tern': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Common-tern-sandwich.jpg/400px-Common-tern-sandwich.jpg',
+  'Mandarin Duck': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Aix_galericulata_%28Mandarin_duck%29.jpg/400px-Aix_galericulata_%28Mandarin_duck%29.jpg',
+  'Swan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Mute_swan_Vrhnika.jpg/400px-Mute_swan_Vrhnika.jpg',
+  'Wheatear': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Oenanthe_oenanthe_a.jpg/400px-Oenanthe_oenanthe_a.jpg',
+  'Nightjar': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Caprimulgus_europaeus_portrait.jpg/400px-Caprimulgus_europaeus_portrait.jpg',
+  'Woodcock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Eurasian_Woodcock_%28Scolopax_rusticola%29.jpg/400px-Eurasian_Woodcock_%28Scolopax_rusticola%29.jpg',
+  'Spotted Flycatcher': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Spotted_flycatcher_%28Muscicapa_striata%29.jpg/400px-Spotted_flycatcher_%28Muscicapa_striata%29.jpg',
+  // Mammals  
+  'Hazel Dormouse': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Muscardinus_avellanarius.jpg/400px-Muscardinus_avellanarius.jpg',
+  'Dormouse': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Muscardinus_avellanarius.jpg/400px-Muscardinus_avellanarius.jpg',
+  'Otter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/European_otter_in_Scotland.jpg/400px-European_otter_in_Scotland.jpg',
+  'Water Vole': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Water_vole.jpg/400px-Water_vole.jpg',
+  'Brown Hare': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Brown_Hare_%28Lepus_europaeus%29_Portrait.jpg/400px-Brown_Hare_%28Lepus_europaeus%29_Portrait.jpg',
+  'Badger': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Badger_portrait.jpg/400px-Badger_portrait.jpg',
+  'Roe Deer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Roe_deer_-_head_portrait.jpg/400px-Roe_deer_-_head_portrait.jpg',
+  'Fallow Deer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Damhirsch-im-herbst.jpg/400px-Damhirsch-im-herbst.jpg',
+  // Butterflies
+  'Adonis Blue Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Lysandra_bellargus_male.jpg/400px-Lysandra_bellargus_male.jpg',
+  'Chalkhill Blue Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Polyommatus_coridon_-_Chalkhill_blue.jpg/400px-Polyommatus_coridon_-_Chalkhill_blue.jpg',
+  'Common Blue Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Common-blue-butterfly.jpg/400px-Common-blue-butterfly.jpg',
+  'Purple Emperor Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Apatura_iris_-_Purple_Emperor.jpg/400px-Apatura_iris_-_Purple_Emperor.jpg',
+  'Purple Hairstreak Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Favonius_quercus_male_2.jpg/400px-Favonius_quercus_male_2.jpg',
+  'Heath Fritillary Butterfly': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Heath_Fritillary_%28Melitaea_athalia%29.jpg/400px-Heath_Fritillary_%28Melitaea_athalia%29.jpg',
+  'Adder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Adder_-_Vipera_berus.jpg/400px-Adder_-_Vipera_berus.jpg',
+  'Pyramidal Orchid': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Anacamptis_pyramidalis_Italy.jpg/400px-Anacamptis_pyramidalis_Italy.jpg',
+  // Plants where Wikipedia API wasn't finding images
+  'Hawthorn': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Hawthorn_berries.jpg/400px-Hawthorn_berries.jpg',
+  'Yarrow': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Achillea_millefolium_-_meadow.jpg/400px-Achillea_millefolium_-_meadow.jpg',
+  'Deadly Nightshade': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Atropa_bella-donna_plant.jpg/400px-Atropa_bella-donna_plant.jpg',
+  'Chalk Carpet Moth': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Xanthorhoe_quadrifasciata01.jpg/400px-Xanthorhoe_quadrifasciata01.jpg',
+  'Beech Nut': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Beech_mast_beechnuts.jpg/400px-Beech_mast_beechnuts.jpg',
+  'Lords & Ladies': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Arum_maculatum_berries_3.jpg/400px-Arum_maculatum_berries_3.jpg',
+  'Arum (Lords & Ladies)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Arum_maculatum_berries_3.jpg/400px-Arum_maculatum_berries_3.jpg',
+  'Herb Robert': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Geranium_robertianum_2.jpg/400px-Geranium_robertianum_2.jpg',
+  'Sweet Cicely': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Myrrhis_odorata_flowers.jpg/400px-Myrrhis_odorata_flowers.jpg',
+  'Wood Sorrel': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Oxalis_acetosella_flowers.jpg/400px-Oxalis_acetosella_flowers.jpg',
+  'Salad Burnet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sanguisorba_minor_flowers.jpg/400px-Sanguisorba_minor_flowers.jpg',
+  'Wild Service Tree': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Sorbus_torminalis_berries.jpg/400px-Sorbus_torminalis_berries.jpg',
+  'Sea Beet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Beta_vulgaris_subsp_maritima_plant.jpg/400px-Beta_vulgaris_subsp_maritima_plant.jpg',
+  'Ground Elder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Aegopodium_podagraria1.jpg/400px-Aegopodium_podagraria1.jpg',
+  'Cleavers (Goosegrass)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Galium_aparine_plant.jpg/400px-Galium_aparine_plant.jpg',
+  'Wild Hops': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Humulus_lupulus_cones.jpg/400px-Humulus_lupulus_cones.jpg',
+  'Rock Samphire': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Crithmum_maritimum_4.jpg/400px-Crithmum_maritimum_4.jpg',
+};
 
 var WIKI_OVERRIDES = {
   // Plants
