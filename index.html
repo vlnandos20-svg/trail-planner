@@ -170,6 +170,8 @@
   .btn-share.copied { background: #1a6e38; }
 
   .map-locate-btn { position: fixed; right: 12px; bottom: 90px; z-index: 25; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; cursor: pointer; font-size: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; }
+  .map-pub-btn { position: fixed; right: 12px; bottom: 138px; z-index: 25; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 2px solid #e2e0da; cursor: pointer; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .map-pub-btn.active { background: #f5e6c0; border-color: #c08030; }
   /* Plant filter tabs */
   .plant-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 12px; }
   .plant-filters::-webkit-scrollbar { display: none; }
@@ -267,6 +269,7 @@
 </head>
 <body>
 <div id="map"></div>
+<button class="map-pub-btn" id="mapPubBtn" onclick="togglePubs()" title="Show/hide pubs &amp; cafés">🍺</button>
 <button class="map-locate-btn" onclick="locateUser()">📍</button>
 <div class="toast" id="toast"></div>
 <input type="file" id="gpxFileInput" accept=".gpx" onchange="loadGPX(event)" />
@@ -1103,13 +1106,13 @@ function openDetail(id){
 
   plotMain(r);
   if (pubsVisible) drawPubs(r.id);
-  var mb=document.getElementById('mapPubBtn'); if(mb){mb.style.display='flex';mb.textContent='🍺';mb.className='map-pub-btn';}
+  var mb=document.getElementById('mapPubBtn'); if(mb){mb.textContent='🍺';mb.className='map-pub-btn';}
 }
 
 function closeDetail(){
   pubsVisible = false;
   clearPubs();
-  var mb2=document.getElementById('mapPubBtn'); if(mb2){mb2.style.display='none';mb2.textContent='🍺';mb2.className='map-pub-btn';}
+  var mb2=document.getElementById('mapPubBtn'); if(mb2){mb2.textContent='🍺';mb2.className='map-pub-btn';}
   var b1 = document.getElementById('pubToggleDetail');
   if (b1) { b1.className = 'pub-toggle-btn'; b1.innerHTML = '🍺 Show pubs &amp; cafés on map'; }
   var dp=document.getElementById('detailPanel');
@@ -1469,6 +1472,10 @@ var pubsVisible = false;
 var pubLayers = [];
 
 function togglePubs() {
+  if (!currentRoute && !pubsVisible) {
+    showToast('Select a route to see pubs & cafés');
+    return;
+  }
   pubsVisible = !pubsVisible;
   var cls = 'pub-toggle-btn' + (pubsVisible ? ' active' : '');
   var b1 = document.getElementById('pubToggleDetail');
