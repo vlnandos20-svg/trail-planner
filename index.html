@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trail Planner</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f6f3; color: #1a1a18; height: 100%; overflow: hidden; }
+  #map { position: fixed; inset: 0; z-index: 0; }
+  .leaflet-top, .leaflet-bottom { z-index: 10 !important; }
+
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 20; background: #fff; padding: 0 16px; height: 52px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: #1a1a18; }
+  .logo-mark { width: 30px; height: 30px; background: #2d5a27; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .gpx-upload-btn { background: #2d5a27; color: #fff; border: none; border-radius: 8px; padding: 7px 12px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  #gpxFileInput { display: none; }
+
+  .filter-bar { position: fixed; top: 52px; left: 0; right: 0; z-index: 20; background: #fff; border-bottom: 1px solid #f0ede8; padding: 10px 14px 8px; transition: transform 0.3s ease, opacity 0.3s ease; }
+  .filter-bar.hidden { transform: translateY(-120%); opacity: 0; pointer-events: none; }
+  .topbar.detail-active { box-shadow: none; }
+  @media (max-width: 767px) {
+    .topbar.detail-active { transform: translateY(-100%); transition: transform 0.3s ease; }
+    .topbar { transition: transform 0.3s ease; }
+  }
+  .search-wrap { position: relative; margin-bottom: 9px; }
+  .search-wrap input { width: 100%; font-family: inherit; font-size: 14px; color: #1a1a18; background: #f4f2ee; border: none; border-radius: 10px; padding: 9px 14px 9px 34px; outline: none; -webkit-appearance: none; }
+  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 13px; color: #9b9b97; pointer-events: none; }
+  .filter-label { font-size: 10px; font-weight: 700; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+
+  .transport-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 9px; }
+  .ttab { padding: 7px 4px; border-radius: 8px; border: 1.5px solid #e2e0da; background: #fafaf8; font-family: inherit; font-size: 11px; font-weight: 600; color: #6b6b67; cursor: pointer; text-align: center; transition: all 0.15s; line-height: 1.3; }
+  .ttab .ti { font-size: 14px; display: block; margin-bottom: 1px; }
+  .ttab.sel-all   { background: #1a1a18; border-color: #1a1a18; color: #fff; }
+  .ttab.sel-train { background: #e8eef8; border-color: #1a3a7a; color: #1a3a7a; }
+  .ttab.sel-bus   { background: #fff0e0; border-color: #c06000; color: #7a3800; }
+  .ttab.sel-car   { background: #f4f2ee; border-color: #4a4a46; color: #1a1a18; }
+
+  .aonb-select-wrap { position: relative; margin-bottom: 9px; }
+  .aonb-select-wrap select { width: 100%; font-family: inherit; font-size: 13px; color: #1a1a18; background: #fafaf8; border: 1.5px solid #e2e0da; border-radius: 8px; padding: 8px 30px 8px 11px; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  .aonb-select-wrap select:focus { border-color: #2d5a27; }
+  .aonb-arrow { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #6b6b67; font-size: 11px; }
+
+  .diff-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .diff-row::-webkit-scrollbar { display: none; }
+  .dpill { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #e2e0da; background: #fafaf8; font-family: inherit; font-size: 12px; font-weight: 600; color: #6b6b67; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  
+  .dpill.sel-easy { background: #e6f3e4; border-color: #2d5a27; color: #1f4a1a; }
+  .dpill.sel-mod  { background: #fef3e2; border-color: #d4900a; color: #7a4800; }
+  .dpill.sel-hard { background: #fde8e8; border-color: #e05555; color: #7f1d1d; }
+
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-radius: 20px 20px 0 0; box-shadow: 0 -4px 24px rgba(0,0,0,0.12); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column; max-height: 80vh; }
+  .sheet.peek { transform: translateY(calc(100% - 68px)); }
+  .sheet.half { transform: translateY(38%); }
+  .sheet.full { transform: translateY(0); }
+  .sheet-handle-wrap { padding: 10px 0 4px; text-align: center; cursor: pointer; flex-shrink: 0; }
+  .sheet-handle { width: 36px; height: 4px; background: #dddbd6; border-radius: 2px; display: inline-block; }
+  .sheet-header { padding: 2px 16px 10px; flex-shrink: 0; }
+  .sheet-count { font-size: 13px; font-weight: 700; color: #1a1a18; }
+  .sheet-sub { font-size: 11px; color: #9b9b97; }
+  .sheet-scroll { flex: 1; overflow-y: auto; padding: 0 12px 24px; -webkit-overflow-scrolling: touch; }
+
+  .rcard { background: #fff; border: 1px solid #e8e6e0; border-radius: 14px; margin-bottom: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.15s, transform 0.1s; }
+  .rcard:active { transform: scale(0.98); }
+  .rcard.active { border-color: #2d5a27; box-shadow: 0 0 0 2px rgba(45,90,39,0.1); }
+  .rcard-head { padding: 12px 14px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .rcard-name { font-size: 14px; font-weight: 700; color: #1a1a18; line-height: 1.3; }
+  .rcard-aonb { font-size: 11px; color: #9b9b97; margin-top: 2px; }
+  .rcard-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
+  .pill { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .p-easy     { background: #e6f3e4; color: #1f4a1a; }
+  .p-moderate { background: #fef3e2; color: #7a4800; }
+  .p-hard     { background: #fde8e8; color: #7f1d1d; }
+  .p-train    { background: #e8eef8; color: #1a3a7a; }
+  .p-bus      { background: #fff0e0; color: #7a3800; }
+  .p-gpx      { background: #f0e8f8; color: #4a1a7a; }
+  .rcard-stats { display: flex; padding: 9px 14px; border-top: 1px solid #f4f2ee; margin-top: 10px; }
+  .rstat { flex: 1; text-align: center; border-right: 1px solid #f4f2ee; }
+  .rstat:last-child { border-right: none; }
+  .rstat-val { font-size: 13px; font-weight: 700; color: #1a1a18; }
+  .rstat-lbl { font-size: 9px; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1px; }
+  .transport-strip { display: flex; align-items: flex-start; gap: 6px; padding: 7px 14px; border-top: 1px solid #f0ede8; font-size: 11px; font-weight: 500; }
+  .transport-strip.train { background: #f0f4fc; color: #1a3a7a; }
+  .transport-strip.bus   { background: #fff8f0; color: #7a3800; }
+  .rcard-tags { padding: 6px 14px 12px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 10px; color: #6b6b67; background: #f4f2ee; border-radius: 4px; padding: 2px 7px; }
+
+  .empty-state { text-align: center; padding: 32px 16px; color: #b0b0ac; }
+  .empty-state .ei { font-size: 36px; opacity: 0.3; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; line-height: 1.55; }
+  .empty-state .gpx-hint { margin-top: 12px; font-size: 12px; color: #9b9b97; background: #f4f2ee; border-radius: 8px; padding: 10px 12px; line-height: 1.5; }
+
+  /* Detail bottom sheet — sits over map like Google Maps */
+  .detail-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    display: flex; flex-direction: column;
+    max-height: 92vh;
+  }
+  .detail-panel.peek { transform: translateY(calc(100% - 82px)); }
+  .detail-panel.half { transform: translateY(40%); }
+  .detail-panel.full { transform: translateY(0); }
+
+  .detail-drag-bar {
+    padding: 10px 0 4px; text-align: center; cursor: pointer; flex-shrink: 0;
+  }
+  .detail-drag-handle { width: 36px; height: 4px; background: #dddbd6; border-radius: 2px; display: inline-block; }
+
+  .detail-top-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 16px 12px; flex-shrink: 0;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%; background: #f4f2ee;
+    border: none; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .detail-top-title {
+    font-size: 14px; font-weight: 700; color: #1a1a18; flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Peek preview — shown when sheet is in peek state */
+  .detail-peek-preview {
+    padding: 0 16px 10px; flex-shrink: 0; cursor: pointer;
+  }
+  .detail-peek-name { font-size: 16px; font-weight: 700; color: #1a1a18; line-height: 1.3; }
+
+  .detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 90px; }
+  .detail-body { padding: 16px 16px 0; }
+  .detail-aonb   { font-size: 12px; font-weight: 700; color: #2d5a27; margin-bottom: 3px; }
+  .detail-name   { font-size: 22px; font-weight: 800; color: #1a1a18; line-height: 1.2; margin-bottom: 3px; letter-spacing: -0.5px; }
+  .detail-region { font-size: 13px; color: #9b9b97; margin-bottom: 14px; }
+  .gpx-badge { display: inline-flex; align-items: center; gap: 5px; background: #f0e8f8; border: 1px solid #d0b8f0; border-radius: 8px; padding: 7px 12px; font-size: 12px; color: #4a1a7a; font-weight: 500; margin-bottom: 14px; }
+  .transport-box { border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+  .transport-box.train { background: #f0f4fc; border: 1px solid #c8d8f0; }
+  .transport-box.bus   { background: #fff8f0; border: 1px solid #f5ddc0; }
+  .transport-box.car   { background: #fafaf8; border: 1px solid #e2e0da; }
+  .tb-title   { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .tb-station-row { display: flex; align-items: flex-start; gap: 10px; }
+  .tb-station-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .tb-station-dot.start { background: #1a3a7a; }
+  .tb-station-dot.end   { background: #2d5a27; }
+  .tb-divider { width: 2px; height: 16px; background: #c8d8f0; margin: 3px 0 3px 4px; }
+  .tb-walk { font-size: 11px; color: #6b6b67; margin-top: 2px; }
+  .transport-box.train .tb-title { color: #1a3a7a; }
+  .transport-box.bus   .tb-title { color: #7a3800; }
+  .transport-box.car   .tb-title { color: #4a4a46; }
+  .tb-station { font-size: 14px; font-weight: 700; color: #1a1a18; margin-bottom: 2px; }
+  .tb-detail  { font-size: 12px; line-height: 1.55; color: #6b6b67; }
+  .transport-box.train .tb-detail { color: #4a6aaa; }
+  .transport-box.bus   .tb-detail { color: #9a5800; }
+  .nr-badge { display: inline-flex; align-items: center; gap: 4px; background: #fff0e0; border: 1px solid #f0c080; border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: #7a4000; margin-top: 6px; }
+  .detail-stats { display: grid; grid-template-columns: repeat(4,1fr); background: #f7f6f3; border-radius: 12px; padding: 12px 6px; margin-bottom: 18px; }
+  .dstat { text-align: center; border-right: 1px solid #e8e6e0; }
+  .dstat:last-child { border-right: none; }
+  .dstat-val { font-size: 15px; font-weight: 700; color: #1a1a18; }
+  .dstat-lbl { font-size: 9px; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+  .detail-desc { font-size: 14px; color: #4a4a46; line-height: 1.65; margin-bottom: 18px; }
+  .hl-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .hl { font-size: 12px; color: #2d5a27; background: #e6f3e4; border-radius: 6px; padding: 5px 10px; font-weight: 500; }
+  .detail-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 16px 24px; background: linear-gradient(to top, #fff 75%, transparent); }
+  .btn-share { width: 100%; padding: 14px; background: #2d5a27; color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-share:active { background: #244820; }
+  .btn-share.copied { background: #1a6e38; }
+
+  .map-locate-btn { position: fixed; right: 12px; bottom: 90px; z-index: 25; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; cursor: pointer; font-size: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; }
+  /* Plant filter tabs */
+  .plant-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 12px; }
+  .plant-filters::-webkit-scrollbar { display: none; }
+  .pftab { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #e2e0da; background: #fafaf8; font-family: inherit; font-size: 11px; font-weight: 600; color: #6b6b67; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .pftab.pf-active     { background: #1a1a18; border-color: #1a1a18; color: #fff; }
+  .pftab.pf-edible     { background: #d0f0d0; border-color: #2d7a27; color: #1a5a1a; }
+  .pftab.pf-medicinal  { background: #d0dcf0; border-color: #1a3a7a; color: #1a2a5a; }
+  .pftab.pf-bushcraft  { background: #f0e8d0; border-color: #8a6010; color: #5a4010; }
+  .pftab.pf-poisonous  { background: #f0d0d0; border-color: #c0392b; color: #7f1d1d; }
+  .pftab.pf-protected  { background: #e8d8f8; border-color: #6b21a8; color: #3a1060; }
+
+  /* Plant cards */
+  .plants-disclaimer { font-size: 11px; color: #9b9b97; background: #f7f6f3; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; line-height: 1.5; }
+  .plant-card { border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; border: 1px solid; }
+  .plant-card.edible     { background: #f0faf0; border-color: #c0e0c0; }
+  .plant-card.medicinal  { background: #f0f4fc; border-color: #c0cce0; }
+  .plant-card.bushcraft  { background: #fdf8f0; border-color: #e0d0b0; }
+  .plant-card.poisonous  { background: #fff0f0; border-color: #e0c0c0; }
+  .plant-card.protected  { background: #f8f0ff; border-color: #d0b8f0; }
+  .plant-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .plant-emoji { font-size: 18px; }
+  .plant-name { font-size: 13px; font-weight: 700; color: #1a1a18; flex: 1; }
+  .plant-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-edible    { background: #d0f0d0; color: #1a5a1a; }
+  .badge-medicinal { background: #d0dcf0; color: #1a2a5a; }
+  .badge-bushcraft { background: #f0e8d0; color: #5a4010; }
+  .badge-poisonous { background: #f0d0d0; color: #5a1010; }
+  .badge-protected { background: #e8d8f8; color: #3a1060; }
+  .plant-season { font-size: 10px; color: #9b9b97; margin-bottom: 5px; }
+  .plant-desc { font-size: 12px; color: #4a4a46; line-height: 1.55; }
+  .plant-warning { font-size: 11px; color: #c0392b; font-weight: 600; margin-top: 5px; }
+
+  /* Pub/cafe markers */
+  .pub-toggle-btn { background: #fff; border: 1.5px solid #e2e0da; border-radius: 20px; padding: 7px 14px; font-family: inherit; font-size: 12px; font-weight: 600; color: #6b6b67; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s; }
+  .pub-toggle-btn.active { background: #f5e6c0; border-color: #c08030; color: #7a4800; }
+  .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important; }
+  .pub-popup { min-width: 190px; max-width: 250px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .pub-popup-name { font-size: 13px; font-weight: 700; color: #1a1a18; margin-bottom: 3px; }
+  .pub-popup-type { font-size: 10px; font-weight: 600; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+  .pub-popup-rating { font-size: 12px; color: #c08030; font-weight: 600; margin-bottom: 4px; }
+  .pub-popup-desc { font-size: 11px; color: #4a4a46; line-height: 1.5; }
+
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1a1a18; color: #fff; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; z-index: 100; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+
+  /* Highlight marker popups */
+  .hl-popup { min-width: 200px; max-width: 260px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .hl-popup-icon { font-size: 20px; margin-bottom: 4px; }
+  .hl-popup-name { font-size: 13px; font-weight: 700; color: #1a1a18; margin-bottom: 6px; }
+  .hl-popup-history { font-size: 12px; color: #4a4a46; line-height: 1.55; }
+  .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important; }
+  .leaflet-popup-tip { display: none; }
+  .toast.show { opacity: 1; }
+
+  @media (min-width: 768px) {
+    .sheet, .filter-bar { display: none !important; }
+    #map { left: 380px; }
+    .desktop-sidebar { display: flex !important; flex-direction: column; position: fixed; left: 0; top: 52px; bottom: 0; width: 380px; background: #fff; border-right: 1px solid #e8e6e0; overflow: hidden; z-index: 5; }
+    .ds-filters { padding: 14px 16px 12px; border-bottom: 1px solid #f0ede8; flex-shrink: 0; }
+    .ds-filters .search-wrap input { background: #f4f2ee; border: none; border-radius: 10px; font-size: 13px; }
+    .ds-scroll { flex: 1; overflow-y: auto; padding: 12px 14px 20px; }
+    .ds-count { font-size: 11px; color: #9b9b97; margin-bottom: 10px; }
+    .detail-panel { left: 0; width: 380px; top: 52px; bottom: 0; border-radius: 0; border-right: 1px solid #e8e6e0; z-index: 8; max-height: none; }
+    .detail-panel.open, .detail-panel.open.peek, .detail-panel.open.half, .detail-panel.open.full { transform: translateX(0) !important; }
+    .detail-panel:not(.open) { transform: translateX(-100%); }
+    .detail-footer { position: sticky; bottom: 0; }
+    .detail-drag-bar { display: none; }
+    .map-locate-btn { bottom: 24px; }
+  }
+  .desktop-sidebar { display: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<button class="map-locate-btn" onclick="locateUser()">📍</button>
+<div class="toast" id="toast"></div>
+<input type="file" id="gpxFileInput" accept=".gpx" onchange="loadGPX(event)" />
+
+<div class="topbar" id="topBar">
+  <div class="logo"><div class="logo-mark">⛰</div>Trail Planner</div>
+  <button class="gpx-upload-btn" onclick="document.getElementById('gpxFileInput').click()">＋ Add GPX</button>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="mSearch" placeholder="Search routes…" oninput="filterRoutes()" />
+  </div>
+
+  <div class="filter-label">Area</div>
+  <div class="aonb-select-wrap" style="margin-bottom:9px">
+    <select id="mAonb" onchange="setAonb(this.value)">
+      <option value="all">All areas</option>
+      <option value="chilterns">Chilterns AONB</option>
+      <option value="south-downs">South Downs National Park</option>
+      <option value="north-downs">North Downs AONB</option>
+      <option value="high-weald">High Weald AONB</option>
+      <option value="kent-downs">Kent Downs AONB</option>
+      <option value="dedham-vale">Dedham Vale AONB</option>
+      <option value="suffolk-coast">Suffolk Coast & Heaths AONB</option>
+    </select>
+    <span class="aonb-arrow">▾</span>
+  </div>
+  <div class="filter-label">Difficulty</div>
+  <div class="diff-row">
+    
+    <button class="dpill"         id="mdp-easy"     onclick="setDiff('easy')">Easy · 2–4 mi</button>
+    <button class="dpill"         id="mdp-moderate" onclick="setDiff('moderate')">Moderate · 5–7 mi</button>
+    <button class="dpill"         id="mdp-hard"     onclick="setDiff('hard')">Hard · 8–12 mi</button>
+  </div>
+</div>
+
+<div class="desktop-sidebar">
+  <div class="ds-filters">
+    <div class="search-wrap" style="margin-bottom:10px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="dSearch" placeholder="Search routes…" oninput="filterRoutes()" />
+    </div>
+
+    <div class="filter-label">Area</div>
+    <div class="aonb-select-wrap" style="margin-bottom:9px">
+      <select id="dAonbSelect" onchange="setAonb(this.value)">
+        <option value="all">All AONBs</option>
+        <option value="surrey-hills">Surrey &amp; Thames</option>
+        <option value="chilterns">Chilterns</option>
+        <option value="south-downs">South Downs</option>
+        <option value="north-downs">North Downs</option>
+        <option value="high-weald">High Weald</option>
+        <option value="kent-downs">Kent Downs</option>
+        <option value="dedham-vale">Dedham Vale</option>
+        <option value="suffolk-coast">Suffolk Coast</option>
+      </select>
+      <span class="aonb-arrow">▾</span>
+    </div>
+    <div class="filter-label">Difficulty</div>
+    <div class="diff-row">
+      
+      <button class="dpill"         id="ddp-easy"     onclick="setDiff('easy')">Easy</button>
+      <button class="dpill"         id="ddp-moderate" onclick="setDiff('moderate')">Moderate</button>
+      <button class="dpill"         id="ddp-hard"     onclick="setDiff('hard')">Hard</button>
+    </div>
+  </div>
+  <div class="ds-scroll"><div class="ds-count" id="dCount"></div><div id="dList"></div></div>
+</div>
+
+<div class="sheet peek" id="sheet" ontouchstart="ts(event)" ontouchmove="tm(event)">
+  <div class="sheet-handle-wrap" onclick="toggleSheet()"><div class="sheet-handle"></div></div>
+  <div class="sheet-header">
+    <div class="sheet-count" id="mCount">Loading…</div>
+    <div class="sheet-sub">Set filters above to find a route</div>
+  </div>
+  <div class="sheet-scroll" id="mList"></div>
+</div>
+
+<div class="detail-panel" id="detailPanel"
+     ontouchstart="dts(event)" ontouchmove="dtm(event)" ontouchend="dte(event)">
+
+  <!-- Drag handle -->
+  <div class="detail-drag-bar" onclick="cycleDetail()">
+    <div class="detail-drag-handle"></div>
+  </div>
+
+  <!-- Top bar with back + title -->
+  <div class="detail-top-bar">
+    <button class="back-btn" onclick="closeDetail()">←</button>
+    <div class="detail-top-title" id="detailTopTitle">Route</div>
+    <button class="locate-btn" style="position:static;box-shadow:none;background:#f4f2ee;width:34px;height:34px;flex-shrink:0;" onclick="locateOnDetail()">📍</button>
+  </div>
+
+  <!-- Peek preview — just name visible when minimised -->
+  <div class="detail-peek-preview" onclick="cycleDetail()">
+    <div class="detail-peek-name" id="dPeekName"></div>
+  </div>
+
+  <!-- Full detail (scrollable) -->
+  <div class="detail-scroll">
+    <div class="detail-body">
+      <div class="detail-aonb"   id="dAonbLabel"></div>
+      <div class="detail-name"   id="dName"></div>
+      <div class="detail-region" id="dRegion"></div>
+      <div id="gpxBadge"></div>
+      <div id="transportBox"></div>
+      <div class="detail-stats">
+        <div class="dstat"><div class="dstat-val" id="dMiles"></div><div class="dstat-lbl">Miles</div></div>
+        <div class="dstat"><div class="dstat-val" id="dElev"></div><div class="dstat-lbl">Ascent</div></div>
+        <div class="dstat"><div class="dstat-val" id="dTime"></div><div class="dstat-lbl">Time</div></div>
+        <div class="dstat"><div class="dstat-val" id="dDiff"></div><div class="dstat-lbl">Grade</div></div>
+      </div>
+      <div class="section-title">About this walk</div>
+      <div class="detail-desc"   id="dDesc"></div>
+      <div class="section-title">Highlights</div>
+      <div class="hl-grid"       id="dHighlights"></div>
+      <button class="pub-toggle-btn" id="pubToggleDetail" onclick="togglePubs()" style="position:static;box-shadow:none;margin-bottom:4px;margin-top:4px;">🍺 Show pubs &amp; cafés on map</button>
+
+      <div class="section-title" style="margin-top:20px">Plants to look out for</div>
+      <div class="plants-disclaimer">🌿 Always be 100% certain of identification before eating anything. Never pick protected species. Forage responsibly.</div>
+      <div class="plant-filters" id="plantFilters">
+        <button class="pftab pf-active" onclick="filterPlants('all',this)">All</button>
+        <button class="pftab" onclick="filterPlants('edible',this)">🌿 Edible</button>
+        <button class="pftab" onclick="filterPlants('medicinal',this)">💊 Medicinal</button>
+        <button class="pftab" onclick="filterPlants('bushcraft',this)">🪓 Bushcraft</button>
+        <button class="pftab" onclick="filterPlants('poisonous',this)">☠️ Poisonous</button>
+        <button class="pftab" onclick="filterPlants('protected',this)">🔒 Protected</button>
+      </div>
+      <div id="dPlants"></div>
+    </div>
+  </div>
+
+  <div class="detail-footer">
+    <button class="btn-share" id="shareBtn" onclick="shareRoute()">
+      <span id="shareTxt">📤 Share this route</span>
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+var ROUTES = [
+  {
+    id:1, name:"Seven Sisters & Friston Forest",
+    aonb:"south-downs", aonbLabel:"South Downs National Park",
+    region:"Birling Gap, East Sussex",
+    difficulty:"moderate", miles:"8.0", elevationM:"210", hours:"3.5–4",
+    transport:"bus", train:null,
+    bus:{stop:"East Dean or Birling Gap", line:"Bus 12/12A/12B Eastbourne–Brighton", walkMins:5},
+    isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A stunning circular walk taking in the iconic Seven Sisters chalk cliffs, the Cuckmere River estuary and the tranquil woodland of Friston Forest. Dramatic coastal scenery followed by peaceful forest trails — one of the finest walks on the South Downs.",
+    highlights:["Seven Sisters chalk cliffs","Cuckmere Haven estuary","Friston Forest","Birling Gap NT café","Belle Tout Lighthouse views"],
+    tags:["Coastal","Forest","South Downs Way","NT","Dog friendly"],
+    highlightMarkers:[
+      {lat:50.7691,lng:0.1967,name:"Haven Brow",icon:"⛰",history:"The highest of the Seven Sisters at 77m. These chalk cliffs formed 87–84 million years ago from the remains of marine organisms in a shallow tropical sea. The cliffs erode by 30–40cm every year, constantly reshaping the coastline."},
+      {lat:50.7765,lng:0.1589,name:"Cuckmere Haven",icon:"🌊",history:"One of the last undeveloped river mouths in SE England. During the Tudor period it was notorious for smuggling — its quiet hidden beaches perfect for landing contraband. In WW2 the Army built decoy lights here to mislead German bombers targeting Newhaven."},
+      {lat:50.7626,lng:0.1568,name:"Birling Gap",icon:"☕",history:"A National Trust site with café and beach access. The steps down to the beach get shorter every few years as the cliff edge erodes. On 19 March 2026 King Charles III designated Seven Sisters a National Nature Reserve — the 13th in his planned series of 25."},
+      {lat:50.7732,lng:0.1830,name:"Friston Forest",icon:"🌲",history:"A 1,400 acre forest planted by the Forestry Commission in the 1920s and 30s, primarily with beech and conifer. It sits above the chalk aquifer that supplies drinking water to Eastbourne — one of the reasons it was planted here."}
+    ],
+    waypoints:[
+      {lat:50.7430,lng:0.2017},{lat:50.7458,lng:0.1990},{lat:50.7508,lng:0.2006},
+      {lat:50.7564,lng:0.2008},{lat:50.7583,lng:0.1975},{lat:50.7607,lng:0.1966},
+      {lat:50.7623,lng:0.1978},{lat:50.7631,lng:0.1975},{lat:50.7647,lng:0.1981},
+      {lat:50.7691,lng:0.1967},{lat:50.7704,lng:0.1942},{lat:50.7691,lng:0.1930},
+      {lat:50.7732,lng:0.1830},{lat:50.7763,lng:0.1696},{lat:50.7765,lng:0.1589},
+      {lat:50.7753,lng:0.1543},{lat:50.7744,lng:0.1554},{lat:50.7710,lng:0.1570},
+      {lat:50.7691,lng:0.1568},{lat:50.7657,lng:0.1523},{lat:50.7641,lng:0.1517},
+      {lat:50.7626,lng:0.1568},{lat:50.7568,lng:0.1584},{lat:50.7500,lng:0.1795},
+      {lat:50.7485,lng:0.1891},{lat:50.7453,lng:0.1958},{lat:50.7454,lng:0.1983},
+      {lat:50.7430,lng:0.2023}
+    ]
+  },
+  {
+    id:2, name:"Amberley to Arundel",
+    aonb:"south-downs", aonbLabel:"South Downs National Park",
+    region:"Amberley, West Sussex",
+    difficulty:"moderate", miles:"8.5", elevationM:"185", hours:"4–4.5",
+    transport:"train",
+    train:{station:"Amberley", stationLat:50.9091, stationLng:-0.5414, line:"Southern · London Victoria", walkMins:2},
+    trainEnd:{station:"Arundel", stationLat:50.8567, stationLng:-0.5511, line:"Southern · London Victoria", walkMins:15},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A beautiful linear walk from Amberley station along the River Arun to the historic castle town of Arundel. The route crosses the wild Amberley Wild Brooks — an ancient floodplain rich in wildlife — before climbing to downland views above the Arun valley.",
+    highlights:["Amberley Wild Brooks","River Arun","Arundel Castle views","South Downs views","Ancient floodplain"],
+    tags:["Train direct","River","Historic","South Downs","Wildlife"],
+    highlightMarkers:[
+      {lat:50.9091,lng:-0.5414,name:"Amberley Station",icon:"🚆",history:"Opened in 1863 on the Arun Valley Line. The station building is largely unchanged and is a Grade II listed structure. Regular services to London Victoria take around 90 minutes."},
+      {lat:50.8848,lng:-0.5628,name:"Arundel Castle",icon:"🏰",history:"One of England's greatest castles, rebuilt by the Dukes of Norfolk after the Civil War. The original castle dates to shortly after the Norman Conquest in 1067. The current structure is largely Victorian, rebuilt between 1875 and 1900."},
+      {lat:50.9072,lng:-0.5532,name:"Amberley Wild Brooks",icon:"🦆",history:"A 365-hectare wetland Site of Special Scientific Interest. In winter it floods completely, creating one of the most important wetland habitats in SE England for wildfowl. The Victorian-era drainage ditches are still maintained today."}
+    ],
+    waypoints:[
+      {lat:50.9091,lng:-0.5414},{lat:50.9086,lng:-0.5452},{lat:50.9080,lng:-0.5476},
+      {lat:50.9074,lng:-0.5489},{lat:50.9072,lng:-0.5532},{lat:50.9060,lng:-0.5548},
+      {lat:50.9050,lng:-0.5556},{lat:50.9023,lng:-0.5533},{lat:50.8995,lng:-0.5509},
+      {lat:50.8992,lng:-0.5499},{lat:50.8995,lng:-0.5489},{lat:50.8989,lng:-0.5485},
+      {lat:50.8992,lng:-0.5462},{lat:50.8978,lng:-0.5438},{lat:50.8968,lng:-0.5444},
+      {lat:50.8950,lng:-0.5477},{lat:50.8928,lng:-0.5494},{lat:50.8914,lng:-0.5549},
+      {lat:50.8899,lng:-0.5595},{lat:50.8883,lng:-0.5609},{lat:50.8840,lng:-0.5587},
+      {lat:50.8818,lng:-0.5555},{lat:50.8804,lng:-0.5514},{lat:50.8797,lng:-0.5483},
+      {lat:50.8803,lng:-0.5437},{lat:50.8791,lng:-0.5408},{lat:50.8780,lng:-0.5421},
+      {lat:50.8748,lng:-0.5415},{lat:50.8682,lng:-0.5653},{lat:50.8687,lng:-0.5642},
+      {lat:50.8726,lng:-0.5636},{lat:50.8773,lng:-0.5620},{lat:50.8818,lng:-0.5633},
+      {lat:50.8834,lng:-0.5586},{lat:50.8864,lng:-0.5608},{lat:50.8881,lng:-0.5614},
+      {lat:50.8897,lng:-0.5600},{lat:50.8921,lng:-0.5519},{lat:50.8932,lng:-0.5488},
+      {lat:50.8955,lng:-0.5474},{lat:50.8965,lng:-0.5448},{lat:50.8975,lng:-0.5440},
+      {lat:50.8987,lng:-0.5450},{lat:50.8991,lng:-0.5472},{lat:50.8988,lng:-0.5480},
+      {lat:50.8993,lng:-0.5494},{lat:50.8993,lng:-0.5504},{lat:50.9019,lng:-0.5531},
+      {lat:50.9035,lng:-0.5544},{lat:50.9047,lng:-0.5552},{lat:50.9054,lng:-0.5554},
+      {lat:50.9074,lng:-0.5525},{lat:50.9074,lng:-0.5495},{lat:50.9083,lng:-0.5468},
+      {lat:50.9089,lng:-0.5435},{lat:50.9092,lng:-0.5407}
+    ]
+  },
+  {
+    id:3, name:"Amberley Circular Walk",
+    aonb:"south-downs", aonbLabel:"South Downs National Park",
+    region:"Amberley, West Sussex",
+    difficulty:"easy", miles:"4.5", elevationM:"95", hours:"2–2.5",
+    transport:"train",
+    train:{station:"Amberley", stationLat:50.9091, stationLng:-0.5414, line:"Southern · London Victoria", walkMins:5},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A lovely short circular walk from Amberley station taking in the chalk downland, the picturesque village of Amberley with its thatched cottages and Norman church, and sweeping views over the Arun valley and Wild Brooks.",
+    highlights:["Amberley village","Norman church","Chalk downland","Arun valley views","Amberley Wild Brooks"],
+    tags:["Train direct","Village","Family","Circular","South Downs"],
+    highlightMarkers:[
+      {lat:50.9085,lng:-0.5320,name:"St Michael's Church",icon:"⛪",history:"A Norman church dating from the 12th century with a remarkable chancel arch. Inside are 12th–13th century wall paintings depicting scenes from the Passion Cycle — among the oldest surviving frescoes in Sussex. Eric Gill and Arthur Rackham are both commemorated in the churchyard."},
+      {lat:50.9094,lng:-0.5345,name:"Amberley Castle",icon:"🏰",history:"Built as a fortified manor house in 1103, then strengthened in 1377 to protect the Bishops of Chichester. The high curtain walls and corner towers gave it the appearance of a castle. Now a luxury hotel, but the medieval walls remain largely intact."},
+      {lat:50.9072,lng:-0.5532,name:"Amberley Wild Brooks",icon:"🦆",history:"Ancient floodplain of the River Arun, flooded every winter for thousands of years. A SSSI internationally important for its wildfowl and wetland plants. The ditches and sluices were created in Victorian times but the wetland habitat is ancient."}
+    ],
+    waypoints:[
+      {lat:50.8965,lng:-0.5426},{lat:50.8959,lng:-0.5439},{lat:50.8950,lng:-0.5461},
+      {lat:50.8930,lng:-0.5480},{lat:50.8924,lng:-0.5483},{lat:50.8915,lng:-0.5476},
+      {lat:50.8899,lng:-0.5475},{lat:50.8891,lng:-0.5456},{lat:50.8883,lng:-0.5457},
+      {lat:50.8879,lng:-0.5461},{lat:50.8871,lng:-0.5435},{lat:50.8871,lng:-0.5411},
+      {lat:50.8886,lng:-0.5323},{lat:50.8904,lng:-0.5277},{lat:50.8903,lng:-0.5227},
+      {lat:50.8915,lng:-0.5201},{lat:50.8924,lng:-0.5164},{lat:50.8934,lng:-0.5175},
+      {lat:50.8943,lng:-0.5192},{lat:50.8951,lng:-0.5215},{lat:50.8959,lng:-0.5211},
+      {lat:50.8987,lng:-0.5217},{lat:50.9002,lng:-0.5240},{lat:50.9012,lng:-0.5248},
+      {lat:50.9025,lng:-0.5246},{lat:50.9024,lng:-0.5271},{lat:50.9029,lng:-0.5297},
+      {lat:50.9031,lng:-0.5318},{lat:50.9039,lng:-0.5333},{lat:50.9053,lng:-0.5331},
+      {lat:50.9071,lng:-0.5342},{lat:50.9088,lng:-0.5339},{lat:50.9093,lng:-0.5339},
+      {lat:50.9094,lng:-0.5355},{lat:50.9086,lng:-0.5362},{lat:50.9058,lng:-0.5355},
+      {lat:50.9062,lng:-0.5337},{lat:50.9051,lng:-0.5328},{lat:50.9041,lng:-0.5334},
+      {lat:50.9030,lng:-0.5322},{lat:50.9016,lng:-0.5345},{lat:50.9004,lng:-0.5392},
+      {lat:50.9025,lng:-0.5397},{lat:50.9019,lng:-0.5463},{lat:50.9000,lng:-0.5464},
+      {lat:50.8989,lng:-0.5440},{lat:50.8976,lng:-0.5421},{lat:50.8968,lng:-0.5422}
+    ]
+  },
+  {
+    id:4, name:"Chiltern Link",
+    aonb:"chilterns", aonbLabel:"Chilterns AONB",
+    region:"Chesham to Berkhamsted, Hertfordshire",
+    difficulty:"moderate", miles:"6.5", elevationM:"175", hours:"3–3.5",
+    transport:"train",
+    train:{station:"Chesham", stationLat:51.7051, stationLng:-0.6112, line:"London Underground · Metropolitan line", walkMins:5},
+    trainEnd:{station:"Berkhamsted", stationLat:51.7622, stationLng:-0.5638, line:"Chiltern Railways · London Marylebone", walkMins:5},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A scenic walk through the heart of the Chilterns AONB linking the Chess Valley to Berkhamsted. Ancient beech woodland, rolling chalk downland and classic English village scenery make this one of the most rewarding walks accessible directly from the London Underground.",
+    highlights:["Chess Valley","Ancient beech woodland","Chiltern hills views","Charming villages","London Underground access"],
+    tags:["Train direct","Woodland","Chilterns","AONB","London accessible"],
+    highlightMarkers:[
+      {lat:51.7056,lng:-0.6112,name:"Chesham Station",icon:"🚇",history:"The terminus of the Metropolitan line's Chesham branch — one of the most rural stations on the entire London Underground network. The branch opened in 1889 and the journey from Baker Street takes around 70 minutes. The branch line to Chesham is the oldest surviving part of the Metropolitan Railway's country extensions."},
+      {lat:51.7583,lng:-0.7397,name:"Chess Valley",icon:"🌿",history:"The River Chess is a chalk stream — one of only around 200 in the world, and more than half of all chalk streams are in England. Fed by groundwater rising through chalk aquifers, chalk streams are exceptionally clear and support rare wildlife including white-clawed crayfish and water voles."},
+      {lat:51.7312,lng:-0.7020,name:"Chiltern Beechwoods",icon:"🌳",history:"The ancient beech woodlands of the Chilterns are designated as an AONB specifically for their landscape character. Many of the beeches were traditionally coppiced to supply the furniture-making industry centred around High Wycombe, known as the 'chair-making capital of England'."}
+    ],
+    waypoints:[
+      {lat:51.7626,lng:-0.7414},{lat:51.7609,lng:-0.7410},{lat:51.7592,lng:-0.7397},
+      {lat:51.7583,lng:-0.7397},{lat:51.7580,lng:-0.7387},{lat:51.7560,lng:-0.7350},
+      {lat:51.7537,lng:-0.7303},{lat:51.7493,lng:-0.7248},{lat:51.7484,lng:-0.7219},
+      {lat:51.7466,lng:-0.7177},{lat:51.7473,lng:-0.7168},{lat:51.7467,lng:-0.7149},
+      {lat:51.7431,lng:-0.7138},{lat:51.7412,lng:-0.7126},{lat:51.7383,lng:-0.7111},
+      {lat:51.7363,lng:-0.7109},{lat:51.7362,lng:-0.7100},{lat:51.7335,lng:-0.7073},
+      {lat:51.7318,lng:-0.7038},{lat:51.7312,lng:-0.7020},{lat:51.7311,lng:-0.6999},
+      {lat:51.7295,lng:-0.6988},{lat:51.7290,lng:-0.6972},{lat:51.7274,lng:-0.6923},
+      {lat:51.7262,lng:-0.6875},{lat:51.7248,lng:-0.6836},{lat:51.7230,lng:-0.6812},
+      {lat:51.7218,lng:-0.6781},{lat:51.7205,lng:-0.6743},{lat:51.7201,lng:-0.6704},
+      {lat:51.7176,lng:-0.6690},{lat:51.7145,lng:-0.6680},{lat:51.7130,lng:-0.6673},
+      {lat:51.7124,lng:-0.6592},{lat:51.7115,lng:-0.6520},{lat:51.7108,lng:-0.6454},
+      {lat:51.7094,lng:-0.6377},{lat:51.7094,lng:-0.6348},{lat:51.7084,lng:-0.6337},
+      {lat:51.7079,lng:-0.6277},{lat:51.7075,lng:-0.6250},{lat:51.7057,lng:-0.6197},
+      {lat:51.7044,lng:-0.6162},{lat:51.7040,lng:-0.6133},{lat:51.7054,lng:-0.6122},
+      {lat:51.7056,lng:-0.6112}
+    ]
+  },
+  {id:5, name:"Runnymede to Windsor",
+    aonb:"surrey-hills", aonbLabel:"Surrey & Thames Valley",
+    region:"Runnymede, Surrey",
+    difficulty:"moderate", miles:"5.9", elevationM:"65", hours:"2.5–3",
+    transport:"train",
+    train:{station:"Egham", stationLat:51.4293, stationLng:-0.5465, line:"South Western · London Waterloo", walkMins:15},
+    trainEnd:{station:"Windsor & Eton Riverside", stationLat:51.4847, stationLng:-0.6082, line:"South Western · London Waterloo", walkMins:5},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A beautiful walk from the historic meadows of Runnymede — where Magna Carta was sealed in 1215 — along the Thames towpath to the ancient town of Windsor with its magnificent royal castle. One of England's most historically significant walks.",
+    highlights:["Runnymede Magna Carta memorial","River Thames towpath","Windsor Castle","Eton College views","Royal Windsor Great Park"],
+    tags:["Historic","Thames","Royal","Family"],
+    highlightMarkers:[
+      {lat:51.4480,lng:-0.5659,name:"Runnymede Meadows",icon:"📜",history:"On 15 June 1215 King John sealed Magna Carta here, creating the foundation of modern democracy and the rule of law. The meadow is owned by the National Trust. Three memorials stand here — one from the American Bar Association (1957), the JFK Memorial (1965), and the Magna Carta Memorial (1957)."},
+      {lat:51.4768,lng:-0.5786,name:"River Thames Towpath",icon:"🌊",history:"The Thames towpath here has been walked by bargemen since medieval times. The river was the main trade route for goods moving between London and the west of England. Windsor Bridge, originally a medieval ford, has been a river crossing since Roman times."},
+      {lat:51.4855,lng:-0.6075,name:"Windsor Castle",icon:"🏰",history:"The world's oldest and largest occupied castle, continuously inhabited by the Royal Family for over 900 years. William the Conqueror built the original motte-and-bailey castle in 1070. The Round Tower, built by Henry II in 1170, still dominates the skyline today."}
+    ],
+    waypoints:[{lat:51.4419493182,lng:-0.5518831264},{lat:51.4413854842,lng:-0.5535556494},{lat:51.4407097114,lng:-0.5552676346},{lat:51.4411592594,lng:-0.5570879842},{lat:51.4428213584,lng:-0.5587982531},{lat:51.44357176,lng:-0.5594940917},{lat:51.4443750502,lng:-0.560835818},{lat:51.4451902323,lng:-0.5631485283},{lat:51.4463803433,lng:-0.564873963},{lat:51.4480780386,lng:-0.5658280775},{lat:51.4490583939,lng:-0.5669486361},{lat:51.4502991035,lng:-0.5691404503},{lat:51.4510338812,lng:-0.5722476548},{lat:51.4527217411,lng:-0.5742458731},{lat:51.456660412,lng:-0.5746269004},{lat:51.4596377674,lng:-0.5735984956},{lat:51.4603212502,lng:-0.5724975905},{lat:51.4618692726,lng:-0.570397984},{lat:51.463183246,lng:-0.5693852194},{lat:51.4645588435,lng:-0.5697380755},{lat:51.4671551195,lng:-0.5743358008},{lat:51.4683616796,lng:-0.5774295481},{lat:51.4688798138,lng:-0.5812286994},{lat:51.4703502059,lng:-0.5838466494},{lat:51.4713282262,lng:-0.5847882219},{lat:51.4715632461,lng:-0.58377308},{lat:51.4737253166,lng:-0.5841020667},{lat:51.4746163599,lng:-0.5834265099},{lat:51.4744617622,lng:-0.579939541},{lat:51.4768280573,lng:-0.5785700482},{lat:51.4801713153,lng:-0.5799061474},{lat:51.4833107421,lng:-0.5829769784},{lat:51.4843229801,lng:-0.5848898724},{lat:51.4848460164,lng:-0.5872500499},{lat:51.4865375384,lng:-0.5895742101},{lat:51.4879031635,lng:-0.5909723743},{lat:51.4878253887,lng:-0.5919829987},{lat:51.4890457839,lng:-0.5925215285},{lat:51.4919333409,lng:-0.597114022},{lat:51.4928554682,lng:-0.5990303484},{lat:51.4923236144,lng:-0.6034400782},{lat:51.4877209631,lng:-0.605813282},{lat:51.4862438055,lng:-0.6063624546},{lat:51.4855383916,lng:-0.6075361724}]
+  },
+  {id:6, name:"Knole Park Circular",
+    aonb:"kent-downs", aonbLabel:"Kent Downs AONB",
+    region:"Sevenoaks, Kent",
+    difficulty:"moderate", miles:"5.7", elevationM:"120", hours:"2.5",
+    transport:"train",
+    train:{station:"Sevenoaks", stationLat:51.2748, stationLng:0.1878, line:"Southeastern · London Charing Cross", walkMins:12},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A circular walk through the ancient deer park surrounding Knole House — one of England's largest historic houses and the inspiration for Virginia Woolf's Orlando. The park contains one of the oldest herds of wild deer in Britain, roaming freely through ancient woodland and open parkland.",
+    highlights:["Knole House (NT)","Ancient deer park","Wild deer herd","Virginia Woolf connection","Sevenoaks town"],
+    tags:["National Trust","Historic","Deer","Wildlife","Family"],
+    highlightMarkers:[
+      {lat:51.2630,lng:0.2249,name:"Knole House",icon:"🏛",history:"One of England's largest historic houses, built in the 1450s by the Archbishop of Canterbury. It has 365 rooms, 52 staircases and 7 courtyards — said to represent the days, weeks and days of the year. Virginia Woolf used Knole as the inspiration for Orlando (1928). Now owned by the National Trust."},
+      {lat:51.2554,lng:0.2078,name:"Ancient Deer Park",icon:"🦌",history:"Knole's deer park dates back to the 15th century and is one of the last medieval deer parks in England still containing free-roaming wild deer. The herd of fallow and sika deer numbers around 350. They have roamed this same land for over 600 years."},
+      {lat:51.2707,lng:0.1930,name:"Sevenoaks",icon:"🌳",history:"The town takes its name from seven oak trees traditionally said to mark the spot. The current seven oaks on the Vine cricket ground (one of the oldest cricket grounds in England, 1773) were planted in 1902. A storm in 1987 felled six of them — they were replanted in 1988."}
+    ],
+    waypoints:[{lat:51.2707069497,lng:0.1930361383},{lat:51.2698435631,lng:0.1971168455},{lat:51.2696379324,lng:0.1996876334},{lat:51.2691886639,lng:0.1996661948},{lat:51.2677436072,lng:0.1999914809},{lat:51.2662289719,lng:0.2028221499},{lat:51.2650527916,lng:0.2031960018},{lat:51.2639471366,lng:0.2057951146},{lat:51.2616728244,lng:0.2095565308},{lat:51.2608771455,lng:0.2100200826},{lat:51.2554107488,lng:0.2077873406},{lat:51.2515693054,lng:0.2064210592},{lat:51.2543343587,lng:0.2112112911},{lat:51.2571912081,lng:0.2170814906},{lat:51.2596474668,lng:0.221535578},{lat:51.2603683337,lng:0.2214628137},{lat:51.2616731929,lng:0.2202356039},{lat:51.2618010436,lng:0.2182349473},{lat:51.2620038037,lng:0.2170262774},{lat:51.2637879021,lng:0.2166103605},{lat:51.2626275779,lng:0.2208907947},{lat:51.2630919415,lng:0.2248552452},{lat:51.2636596519,lng:0.2281080307},{lat:51.2642014768,lng:0.2291735249},{lat:51.2661912018,lng:0.2285887953},{lat:51.2668637559,lng:0.227510267},{lat:51.2671966197,lng:0.2253759306},{lat:51.2676308847,lng:0.2238199073},{lat:51.2684334165,lng:0.2229984347},{lat:51.2704680689,lng:0.2235983591},{lat:51.2717198997,lng:0.2239813415},{lat:51.2734686111,lng:0.22306205},{lat:51.2739444189,lng:0.2228699243},{lat:51.2730450306,lng:0.2193137658},{lat:51.2722789618,lng:0.2158358515},{lat:51.2716755877,lng:0.2132619568},{lat:51.2715616218,lng:0.2109625089},{lat:51.2709976677,lng:0.2086773583},{lat:51.2699336003,lng:0.2078736924},{lat:51.2676794369,lng:0.2057945159},{lat:51.267239608,lng:0.2052717118},{lat:51.2694991171,lng:0.1998960579}]
+  },
+  {id:7, name:"Woldingham & Marden Park",
+    aonb:"north-downs", aonbLabel:"North Downs AONB",
+    region:"Woldingham, Surrey",
+    difficulty:"moderate", miles:"5.0", elevationM:"145", hours:"2.5",
+    transport:"train",
+    train:{station:"Woldingham", stationLat:51.2982, stationLng:-0.0474, line:"Southern · London Victoria", walkMins:5},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A beautiful circular walk from Woldingham station through the ancient woodland and chalk downland of Marden Park. One of the most accessible North Downs walks from London — you step straight off the train into open countryside with sweeping views across the Weald.",
+    highlights:["Marden Park estate","North Downs views","Ancient chalk downland","Woldingham village","Weald views"],
+    tags:["Train direct","Woodland","North Downs","Views","Quiet"],
+    highlightMarkers:[
+      {lat:51.2612,lng:-0.0423,name:"Marden Park",icon:"🌳",history:"The Marden Park estate dates back to the 17th century. The house was rebuilt in 1880 and is now a school. The surrounding woodland and chalk downland are designated as a Site of Special Scientific Interest, home to rare chalk-loving plants and butterflies including the chalkhill blue."},
+      {lat:51.2676,lng:-0.0537,name:"North Downs Chalk Escarpment",icon:"⛰",history:"The North Downs are a ridge of chalk hills stretching 160 miles from Farnham in Surrey to the White Cliffs of Dover. The chalk was formed 65–100 million years ago from the remains of marine organisms in a shallow tropical sea. The ancient Pilgrim's Way follows this ridge to Canterbury Cathedral."},
+      {lat:51.2900,lng:-0.0516,name:"Woldingham Station",icon:"🚆",history:"One of the quietest stations on the Southern network, sitting in a fold of the North Downs. The line through Woldingham runs through a tunnel under the chalk escarpment — the Oxted line tunnel, opened in 1884, is 1 mile long and was a major feat of Victorian engineering."}
+    ],
+    waypoints:[{lat:51.28999635,lng:-0.05156278},{lat:51.28690983,lng:-0.04890203},{lat:51.28637302,lng:-0.04928827},{lat:51.2843331,lng:-0.04830121},{lat:51.28022615,lng:-0.04774332},{lat:51.27625305,lng:-0.04795789},{lat:51.27474963,lng:-0.04606962},{lat:51.27249441,lng:-0.04675626},{lat:51.26878915,lng:-0.05018949},{lat:51.2676077,lng:-0.05370855},{lat:51.26567436,lng:-0.05495309},{lat:51.26478822,lng:-0.05147695},{lat:51.26183428,lng:-0.0477004},{lat:51.26121662,lng:-0.04233598},{lat:51.2655401,lng:-0.03873109},{lat:51.2674466,lng:-0.03328084},{lat:51.26897711,lng:-0.03190755},{lat:51.27007797,lng:-0.03366708},{lat:51.27372942,lng:-0.03632783},{lat:51.27550135,lng:-0.0386238},{lat:51.27641413,lng:-0.04169225},{lat:51.27917922,lng:-0.04396677},{lat:51.28180992,lng:-0.04345178},{lat:51.28301784,lng:-0.04381656},{lat:51.2862925,lng:-0.0478506},{lat:51.2896242058,lng:-0.0516047343}]
+  },
+  {id:8, name:"Sevenoaks Circular",
+    aonb:"kent-downs", aonbLabel:"Kent Downs AONB",
+    region:"Sevenoaks, Kent",
+    difficulty:"easy", miles:"4.4", elevationM:"95", hours:"2",
+    transport:"train",
+    train:{station:"Sevenoaks", stationLat:51.2748, stationLng:0.1878, line:"Southeastern · London Charing Cross", walkMins:8},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A shorter circular walk from Sevenoaks station through the rolling Kent countryside, taking in views of the Weald and passing through ancient woodland. A perfect half-day walk direct from London.",
+    highlights:["Sevenoaks town","Kent countryside","Weald views","Ancient woodland","The Vine cricket ground"],
+    tags:["Train direct","Family","Easy","Kent","Half day"],
+    highlightMarkers:[
+      {lat:51.2952,lng:0.1755,name:"The Weald",icon:"🌄",history:"The Weald is the ancient forest that once covered most of Kent, Sussex and Surrey. Its name comes from the Old English 'wald' meaning forest. By medieval times it had been largely cleared for iron-smelting using local ironstone — the Weald was England's industrial heartland in Tudor times."},
+      {lat:51.3053,lng:0.1701,name:"North Downs Views",icon:"⛰",history:"From the high ground north of Sevenoaks you can see the full sweep of the Greensand Ridge and North Downs. On a clear day the view stretches 20 miles south across the Weald to the South Downs on the horizon — a view that has remained essentially unchanged for centuries."}
+    ],
+    waypoints:[{lat:51.2774511011,lng:0.1822443511},{lat:51.278837163,lng:0.1826684527},{lat:51.2801071208,lng:0.182083301},{lat:51.2824086216,lng:0.1840565074},{lat:51.2827431291,lng:0.1829968175},{lat:51.282966845,lng:0.1806412172},{lat:51.2861530206,lng:0.1785690133},{lat:51.2863633413,lng:0.1769296707},{lat:51.2864178554,lng:0.1739922205},{lat:51.290072869,lng:0.1733040492},{lat:51.2952035719,lng:0.1754824545},{lat:51.2975434571,lng:0.1778163786},{lat:51.2992679699,lng:0.1769653965},{lat:51.2995497625,lng:0.1738943859},{lat:51.299141652,lng:0.1716515828},{lat:51.3026618588,lng:0.1709566475},{lat:51.3052861752,lng:0.1700759385},{lat:51.304317774,lng:0.1665153102},{lat:51.3020846962,lng:0.1608152785},{lat:51.3006523201,lng:0.1604612136},{lat:51.2980663623,lng:0.1592641315},{lat:51.2973475335,lng:0.1592304582},{lat:51.2956640566,lng:0.1578606133},{lat:51.2941827901,lng:0.1577195514},{lat:51.2914250058,lng:0.1560844525},{lat:51.2900678326,lng:0.1540847341},{lat:51.2895348375,lng:0.1488248877},{lat:51.2880601288,lng:0.1483258887},{lat:51.2855641961,lng:0.1495719663}]
+  },
+  {id:9, name:"Seaford to Eastbourne",
+    aonb:"south-downs", aonbLabel:"South Downs National Park",
+    region:"Seaford to Eastbourne, East Sussex",
+    difficulty:"hard", miles:"12.9", elevationM:"380", hours:"5–6",
+    transport:"train",
+    train:{station:"Seaford", stationLat:50.7712, stationLng:0.1012, line:"Southern · London Victoria via Lewes", walkMins:10},
+    trainEnd:{station:"Eastbourne", stationLat:50.7683, stationLng:0.2842, line:"Southern · London Victoria via Lewes", walkMins:12},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"A spectacular linear coastal walk from Seaford station across Seaford Head, over the full length of the Seven Sisters chalk cliffs, past Birling Gap and Belle Tout lighthouse to finish at Eastbourne. The finest coastal walk in SE England — point to point on the South Downs Way.",
+    highlights:["Seaford Head viewpoint","All Seven Sisters cliffs","Birling Gap NT café","Belle Tout lighthouse","Beachy Head","Eastbourne seafront"],
+    tags:["South Downs Way","Coastal","Iconic","Linear","Train both ends"],
+    highlightMarkers:[
+      {lat:50.7711,lng:0.0959,name:"Seaford Head",icon:"⛰",history:"Seaford Head is an Iron Age promontory fort dating back 2,500 years. The earthworks are still visible. In WW2 the headland was fortified with gun emplacements to guard against German invasion. It gives the classic photographers' view of all seven chalk cliff peaks stretching east."},
+      {lat:50.7432,lng:0.2016,name:"Seven Sisters Cliffs",icon:"🌊",history:"The cliffs formed 87–84 million years ago from chalk deposited in a tropical sea. They erode by 30–40cm per year. In March 2026 King Charles III designated Seven Sisters a National Nature Reserve. The cliffs have appeared in countless films as a stand-in for the White Cliffs of Dover."},
+      {lat:50.7390,lng:0.2532,name:"Belle Tout Lighthouse",icon:"💡",history:"Built in 1832 to warn ships away from Beachy Head. It was decommissioned in 1902 when the new Beachy Head lighthouse was built at sea level. Famous for being moved 17 metres inland in 1999 to save it from cliff erosion — the entire 850-tonne structure was moved on hydraulic jacks."},
+      {lat:50.7672,lng:0.2925,name:"Eastbourne",icon:"🏖",history:"Eastbourne was largely built in the 1850s–1870s by the Duke of Devonshire as a planned seaside resort. Its grand Victorian seafront is largely intact and protected. The town has more sunshine hours than almost anywhere else in England."}
+    ],
+    waypoints:[{lat:50.7711529245,lng:0.0958674891},{lat:50.7681199167,lng:0.1019713471},{lat:50.7639376204,lng:0.1094406412},{lat:50.761042527,lng:0.1153362721},{lat:50.7582453067,lng:0.1257019086},{lat:50.7562467705,lng:0.1365991032},{lat:50.7565000274,lng:0.1399425713},{lat:50.7589063993,lng:0.1460079081},{lat:50.7597971522,lng:0.1464741711},{lat:50.7600946527,lng:0.1474094929},{lat:50.7648057622,lng:0.1479803891},{lat:50.7673061323,lng:0.1489461557},{lat:50.7733843275,lng:0.1461051601},{lat:50.7741115071,lng:0.1481242563},{lat:50.7752050134,lng:0.1522169552},{lat:50.7752581406,lng:0.1542051769},{lat:50.7723789618,lng:0.156696433},{lat:50.7693686538,lng:0.1565575845},{lat:50.7674245724,lng:0.1546951993},{lat:50.7653164829,lng:0.151974551},{lat:50.7639633366,lng:0.1521958884},{lat:50.7622565714,lng:0.1569385955},{lat:50.756740917,lng:0.1585273887},{lat:50.7542106902,lng:0.1664210694},{lat:50.7496997198,lng:0.1815936887},{lat:50.7488583185,lng:0.1880756035},{lat:50.7455346998,lng:0.1950078467},{lat:50.7454402335,lng:0.1976258879},{lat:50.7432071652,lng:0.2015607901},{lat:50.7426726539,lng:0.2036618409},{lat:50.7406508035,lng:0.2035665622},{lat:50.7386660372,lng:0.2109850487},{lat:50.7385604081,lng:0.214169122},{lat:50.7372962816,lng:0.2191407864},{lat:50.7370407324,lng:0.2230971731},{lat:50.7358457708,lng:0.2338118297},{lat:50.7357134698,lng:0.2406794304},{lat:50.737734658,lng:0.2477922695},{lat:50.7392780747,lng:0.2516935053},{lat:50.7390708942,lng:0.2531009499},{lat:50.7391864508,lng:0.2540987154},{lat:50.7389608776,lng:0.2587653333},{lat:50.7452292361,lng:0.2648094853},{lat:50.7480854106,lng:0.2659402188},{lat:50.7490994556,lng:0.2669817751},{lat:50.7507508011,lng:0.2676289505},{lat:50.7518584893,lng:0.2673282122},{lat:50.753313861,lng:0.2699509455},{lat:50.7539507456,lng:0.2730303286},{lat:50.7554571629,lng:0.2753368124},{lat:50.7568597953,lng:0.278347384},{lat:50.7586134474,lng:0.28180068},{lat:50.760727313,lng:0.2863708817},{lat:50.7630434459,lng:0.2875123196},{lat:50.7644667051,lng:0.2894611006},{lat:50.7671958046,lng:0.2924668155}]
+  },
+  {id:10, name:"Tunbridge Wells Circular",
+    aonb:"high-weald", aonbLabel:"High Weald AONB",
+    region:"Royal Tunbridge Wells, Kent",
+    difficulty:"hard", miles:"26.5", elevationM:"520", hours:"Full day+",
+    transport:"train",
+    train:{station:"Tunbridge Wells", stationLat:51.1623, stationLng:0.2627, line:"Southeastern · London Charing Cross", walkMins:5},
+    bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
+    description:"An epic full-day circular walk exploring the full extent of the High Weald AONB from Royal Tunbridge Wells. This challenging 26-mile route passes through ancient woodland, past historic houses and through classic Wealden landscapes. Best split over two days for most walkers.",
+    highlights:["Royal Tunbridge Wells Pantiles","High Weald ancient woodland","Wealden iron heritage","Kent countryside","Groombridge Place"],
+    tags:["High Weald","Challenge","Full day","Historic","Epic"],
+    highlightMarkers:[
+      {lat:51.1623,lng:0.2520,name:"The Pantiles, Tunbridge Wells",icon:"🏛",history:"The Pantiles is a colonnaded promenade built in the 1600s around the chalybeate spring discovered in 1606 by Lord North. The iron-rich waters became fashionable with London society — Queen Henrietta Maria visited in 1630, and the town gradually acquired its 'Royal' prefix. The distinctive clay tiles that gave it its name were laid in 1698."},
+      {lat:51.1124,lng:0.2757,name:"High Weald Ancient Woodland",icon:"🌳",history:"The High Weald AONB contains some of the most intact ancient woodland in SE England. Many woods here have been continuously wooded since before 1600 — so-called 'ancient woodland'. The Weald was England's industrial heartland in Tudor and Stuart times, with iron foundries powered by charcoal from these very woods."},
+      {lat:51.0930,lng:0.2681,name:"Wealden Iron Heritage",icon:"⚒",history:"The Weald produced most of England's iron from the 13th to 18th centuries, using local ironstone smelted with charcoal from the surrounding forests. Many of the hammer ponds — artificial lakes created to power water wheels for the ironworks — survive today as wildlife habitats. The industry declined when Abraham Darby developed coke-smelting in 1709."}
+    ],
+    waypoints:[{lat:51.1623052389,lng:0.252007554},{lat:51.1645237443,lng:0.256821561},{lat:51.1619492737,lng:0.2583407319},{lat:51.1647043697,lng:0.2644207413},{lat:51.1658891155,lng:0.2689895728},{lat:51.166619296,lng:0.2721437824},{lat:51.1631128098,lng:0.2785652972},{lat:51.1632156885,lng:0.2792855381},{lat:51.164743594,lng:0.2788745381},{lat:51.1667256204,lng:0.2791582076},{lat:51.1694964085,lng:0.2818841029},{lat:51.1702432663,lng:0.2841669537},{lat:51.171815934,lng:0.2846881672},{lat:51.173116538,lng:0.2807180358},{lat:51.1740922579,lng:0.2809521776},{lat:51.1778533765,lng:0.2845431285},{lat:51.1791368719,lng:0.2828323537},{lat:51.1817574122,lng:0.2835771303},{lat:51.1824126693,lng:0.2965022694},{lat:51.1835716634,lng:0.2997652691},{lat:51.1825139837,lng:0.3125201442},{lat:51.1814734424,lng:0.3172181215},{lat:51.182178443,lng:0.3188561315},{lat:51.180126016,lng:0.320312772},{lat:51.1799531311,lng:0.3199606812},{lat:51.177733199,lng:0.3207935466},{lat:51.1762074237,lng:0.3197296959},{lat:51.1750924882,lng:0.3197166481},{lat:51.1724117402,lng:0.3179368586},{lat:51.1722415187,lng:0.3183575097},{lat:51.1702020209,lng:0.3182552056},{lat:51.1691707288,lng:0.316744335},{lat:51.1682980152,lng:0.3172155746},{lat:51.1677578838,lng:0.3167879597},{lat:51.1680592755,lng:0.3192778298},{lat:51.1660775679,lng:0.3194358787},{lat:51.1618824403,lng:0.3241742746},{lat:51.1608585878,lng:0.3236508138},{lat:51.1578858802,lng:0.3257039084},{lat:51.1579956111,lng:0.3292276939},{lat:51.157320918,lng:0.3292366126},{lat:51.1574447438,lng:0.3302439712},{lat:51.156541578,lng:0.3299839355},{lat:51.1562996808,lng:0.3393963603},{lat:51.1547389163,lng:0.3400896522},{lat:51.1548998474,lng:0.3414849896},{lat:51.1525694543,lng:0.3451279664},{lat:51.149738194,lng:0.3414524637},{lat:51.1484630983,lng:0.3386568121},{lat:51.1450557212,lng:0.3376981633},{lat:51.144662259,lng:0.3411812401},{lat:51.1409227621,lng:0.3401913972},{lat:51.1386349625,lng:0.3363158575},{lat:51.1398993615,lng:0.3342495519},{lat:51.1403627472,lng:0.3299554023},{lat:51.1392195109,lng:0.3286540732},{lat:51.138107417,lng:0.3284980356},{lat:51.1384323427,lng:0.3270848025},{lat:51.1370666237,lng:0.3261155085},{lat:51.1348289214,lng:0.3205996247},{lat:51.1353810357,lng:0.3199697466},{lat:51.1344465155,lng:0.3190223382},{lat:51.1264370916,lng:0.3051864966},{lat:51.1269274313,lng:0.3026668965},{lat:51.1248889493,lng:0.2978478168},{lat:51.1243841701,lng:0.294794435},{lat:51.1248698063,lng:0.2925032721},{lat:51.1239396407,lng:0.2912271512},{lat:51.122453978,lng:0.2854383089},{lat:51.1214964288,lng:0.2870344525},{lat:51.12024139,lng:0.287286844},{lat:51.1183062,lng:0.2864481968},{lat:51.1190103156,lng:0.2835535663},{lat:51.1158864509,lng:0.2818706236},{lat:51.1151213202,lng:0.283747588},{lat:51.1143735772,lng:0.2815103148},{lat:51.1147297419,lng:0.278927369},{lat:51.1124804083,lng:0.2757448304},{lat:51.1089358664,lng:0.2730276662},{lat:51.108566753,lng:0.2735095812},{lat:51.1064844647,lng:0.2732931004},{lat:51.1057539769,lng:0.2724715447},{lat:51.1045047209,lng:0.2733530931},{lat:51.1023383017,lng:0.270061333},{lat:51.100407916,lng:0.2698953388},{lat:51.0997754793,lng:0.2705071275},{lat:51.0979008272,lng:0.269786813},{lat:51.0961867507,lng:0.270059926},{lat:51.0930412416,lng:0.2680920831},{lat:51.0928478965,lng:0.2646276824},{lat:51.0934612278,lng:0.2619800318},{lat:51.0929699809,lng:0.2592339615},{lat:51.0913157835,lng:0.2536122481},{lat:51.092935957,lng:0.2418515584},{lat:51.090064799,lng:0.2382139165},{lat:51.0918288493,lng:0.2273168159},{lat:51.0937584445,lng:0.2256385973},{lat:51.0965806142,lng:0.2252599531},{lat:51.0978846826,lng:0.2224231034},{lat:51.0986474039,lng:0.2234595164},{lat:51.0984715171,lng:0.2170950193},{lat:51.0992956766,lng:0.2167916468},{lat:51.1009689105,lng:0.2034131509},{lat:51.1011248463,lng:0.2004239072},{lat:51.1028470184,lng:0.1973202326},{lat:51.1006238554,lng:0.1955007404},{lat:51.0989132644,lng:0.1951197439},{lat:51.0966340074,lng:0.1934121248},{lat:51.0961650818,lng:0.1891623094},{lat:51.0973447128,lng:0.185718732},{lat:51.0997738205,lng:0.185190545},{lat:51.1039039484,lng:0.1855567512},{lat:51.1054838801,lng:0.1866741151},{lat:51.1058376276,lng:0.1898764746},{lat:51.107089816,lng:0.1897642354},{lat:51.1079085047,lng:0.1911886886},{lat:51.1100034035,lng:0.1849730321},{lat:51.1121076988,lng:0.1859438292},{lat:51.1142365465,lng:0.1856013743},{lat:51.114622985,lng:0.1880200271},{lat:51.1167858714,lng:0.1892224578},{lat:51.11804541,lng:0.1853524582},{lat:51.1227626917,lng:0.1899051882},{lat:51.1245146308,lng:0.1909598607},{lat:51.1292464713,lng:0.1913696243},{lat:51.1295995172,lng:0.193644605},{lat:51.1349961651,lng:0.2007903463},{lat:51.1391785225,lng:0.2050635648},{lat:51.1387267476,lng:0.207558076},{lat:51.1417345634,lng:0.2087738278},{lat:51.1431372673,lng:0.2083118023},{lat:51.1455451375,lng:0.2089128645},{lat:51.1468404854,lng:0.2065154278},{lat:51.1488477121,lng:0.2064252898},{lat:51.1489131913,lng:0.2086733298},{lat:51.1499263517,lng:0.2143606143},{lat:51.151200958,lng:0.2175196003},{lat:51.1504403206,lng:0.2187414741},{lat:51.1520157461,lng:0.2233929914},{lat:51.1515594845,lng:0.2256304086},{lat:51.152755329,lng:0.2256450543},{lat:51.1539860574,lng:0.22855007},{lat:51.1534346952,lng:0.228695105},{lat:51.1547916868,lng:0.2351165227},{lat:51.1550371146,lng:0.2389687857},{lat:51.1547608757,lng:0.2414076336},{lat:51.15545029,lng:0.2483701997},{lat:51.1560050086,lng:0.2508569616},{lat:51.1562786844,lng:0.2506557645},{lat:51.1565273296,lng:0.2517547633},{lat:51.1570608398,lng:0.2511371775},{lat:51.1572118412,lng:0.2517022867},{lat:51.1578681157,lng:0.2512479864},{lat:51.1574329802,lng:0.250025471},{lat:51.1620073579,lng:0.2520645593}]
+  },
+
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+var diff='', aonb='', transport='all';
+var currentRoute=null;
+var map, mainLayers=[];
+var sheetState='peek', touchStartY=0;
+var detailState='peek', detailTouchY=0;
+var userLat=null, userLng=null, userMarker=null;
+
+// ── MAP ────────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  if (typeof L==='undefined') return;
+  var isD=window.innerWidth>=768;
+  map=L.map('map',{zoomControl:isD}).setView([51.2,0.0],8);
+  var voyager=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',subdomains:'abcd',maxZoom:19});
+  var light=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',subdomains:'abcd',maxZoom:19});
+  voyager.addTo(map);
+  L.control.layers({'Voyager':voyager,'Minimal':light}).addTo(map);
+  startLocation();
+  renderRoutes();
+  setTimeout(function(){ plotAllPins(); }, 400);
+});
+
+function startLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(function(pos) {
+    userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+    updateDot(map,userMarker,function(m){userMarker=m;});
+  },function(){},{enableHighAccuracy:true,maximumAge:5000});
+}
+function updateDot(m,existing,setter){
+  if(!m||userLat===null)return;
+  if(existing){existing.setLatLng([userLat,userLng]);return;}
+  var icon=L.divIcon({className:'',html:'<div style="position:relative;width:20px;height:20px"><div style="position:absolute;inset:0;border-radius:50%;background:rgba(37,99,235,0.2);animation:pulse 2s ease-in-out infinite"></div><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#2563eb;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div></div><style>@keyframes pulse{0%,100%{transform:scale(1);opacity:0.6}50%{transform:scale(1.8);opacity:0.2}}</style>',iconSize:[20,20],iconAnchor:[10,10]});
+  setter(L.marker([userLat,userLng],{icon:icon,zIndexOffset:300,interactive:false}).addTo(m));
+}
+
+function locateUser(){if(userLat!==null){map.setView([userLat,userLng],15);}else{navigator.geolocation.getCurrentPosition(function(p){userLat=p.coords.latitude;userLng=p.coords.longitude;map.setView([userLat,userLng],15);});}}
+function locateOnDetail(){if(map&&userLat!==null)map.setView([userLat,userLng],16);}
+
+// ── SHEET ──────────────────────────────────────────────────────────────────
+function ts(e){touchStartY=e.touches[0].clientY;}
+function tm(e){var dy=e.touches[0].clientY-touchStartY;if(dy>60&&sheetState==='full'){sheetState='half';us();}else if(dy>60&&sheetState==='half'){sheetState='peek';us();}else if(dy<-60&&sheetState==='peek'){sheetState='half';us();}else if(dy<-60&&sheetState==='half'){sheetState='full';us();}}
+function toggleSheet(){sheetState=sheetState==='peek'?'half':sheetState==='half'?'full':'peek';us();}
+function us(){document.getElementById('sheet').className='sheet '+sheetState;}
+
+// Detail sheet gestures
+function dts(e){detailTouchY=e.touches[0].clientY;}
+function dtm(e){
+  var dy=e.touches[0].clientY-detailTouchY;
+  if(dy>60&&detailState==='full'){detailState='half';ud();}
+  else if(dy>60&&detailState==='half'){detailState='peek';ud();}
+  else if(dy<-60&&detailState==='peek'){detailState='half';ud();}
+  else if(dy<-60&&detailState==='half'){detailState='full';ud();}
+}
+function dte(e){}
+function cycleDetail(){
+  detailState=detailState==='peek'?'half':detailState==='half'?'full':'peek';
+  ud();
+}
+function ud(){document.getElementById('detailPanel').className='detail-panel open '+detailState;}
+
+// ── FILTERS ────────────────────────────────────────────────────────────────
+function setTransport(t){transport=(transport===t?'all':t);['train','bus','car'].forEach(function(k){var cls='ttab'+(k===transport?' sel-'+k:'');var m=document.getElementById('mtt-'+k),d=document.getElementById('dtt-'+k);if(m)m.className=cls;if(d)d.className=cls;});filterRoutes();}
+function setAonb(a){aonb=(a==='all'?'':a);var ms=document.getElementById('mAonb'),ds=document.getElementById('dAonbSelect');if(ms)ms.value=aonb||'all';if(ds)ds.value=aonb||'all';filterRoutes();}
+function setDiff(d){diff=(diff===d?'':d);['easy','moderate','hard'].forEach(function(k){var active=k===diff;var cls='dpill'+(active?' sel-'+(k==='moderate'?'mod':k):'');var m=document.getElementById('mdp-'+k),dd=document.getElementById('ddp-'+k);if(m)m.className=cls;if(dd)dd.className=cls;});filterRoutes();}
+
+function filterRoutes(){
+  var q=(document.getElementById('mSearch')||{value:''}).value||(document.getElementById('dSearch')||{value:''}).value||'';
+  q=q.toLowerCase().trim();
+  var hasFilter=!!diff||!!aonb||!!transport||!!q;
+  if(!hasFilter){ renderList(null); return; }
+  var filtered=ROUTES.filter(function(r){
+    var okD=!diff||r.difficulty===diff;
+    var okA=!aonb||aonb==='all'||r.aonb===aonb;
+    var okT=true; // transport shown as info, not a filter
+    var okQ=!q||r.name.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)||r.aonbLabel.toLowerCase().includes(q)||(r.tags&&r.tags.some(function(t){return t.toLowerCase().includes(q);}));
+    return okD&&okA&&okT&&okQ;
+  });
+  renderList(filtered);
+}
+function renderRoutes(){filterRoutes();}
+
+function renderList(routes){
+  var ml=document.getElementById('mList'),dl=document.getElementById('dList');
+  var mc=document.getElementById('mCount'),dc=document.getElementById('dCount');
+  if(routes===null){
+    var msg='<div class="empty-state"><div class="ei">🗺</div><p>Choose how you are getting there, pick an area, or select a difficulty to find your route.</p></div>';
+    if(ml)ml.innerHTML=msg;if(dl)dl.innerHTML=msg;
+    if(mc)mc.textContent='';if(dc)dc.textContent='';
+    return;
+  }
+  var aonbOrder={chilterns:0,'surrey-hills':1,'north-downs':2,'south-downs':3,'high-weald':4,'kent-downs':5,'dedham-vale':6,'suffolk-coast':7};
+  routes=routes.slice().sort(function(a,b){
+    var ao=aonbOrder[a.aonb]!==undefined?aonbOrder[a.aonb]:99;
+    var bo=aonbOrder[b.aonb]!==undefined?aonbOrder[b.aonb]:99;
+    return ao-bo;
+  });
+  var pc={easy:'p-easy',moderate:'p-moderate',hard:'p-hard'};
+  var cap=function(s){return s.charAt(0).toUpperCase()+s.slice(1);};
+  var html;
+  if(!routes.length){
+    html='<div class="empty-state"><div class="ei">🥾</div><p>No routes match your filters.</p><div class="gpx-hint">Tap + Add GPX to upload a route from National Trail, AllTrails, Komoot or OS Maps.</div></div>';
+  } else {
+    html=routes.map(function(r){
+      var badges='<span class="pill '+pc[r.difficulty]+'">'+cap(r.difficulty)+'</span>';
+      if(r.train) badges='<span class="pill p-train">🚆 Train</span>'+badges;
+      if(r.gpxSource) badges='<span class="pill p-gpx">📍 GPX</span>'+badges;
+      var strip='';
+      if(r.train){
+        if(r.trainEnd){
+          strip='<div class="transport-strip train">🚆 <strong>'+r.train.station+'</strong> → <strong>'+r.trainEnd.station+'</strong> &middot; '+r.train.line+'</div>';
+        } else {
+          strip='<div class="transport-strip train">🚆 <strong>'+r.train.station+'</strong> &middot; '+r.train.walkMins+' min walk &middot; '+r.train.line+'</div>';
+        }
+      }
+      return '<div class="rcard" id="rc-'+r.id+'" onclick="openDetail('+r.id+')">' +
+        '<div class="rcard-head"><div><div class="rcard-name">'+r.name+'</div><div class="rcard-aonb">'+r.aonbLabel+'</div></div><div class="rcard-badges">'+badges+'</div></div>' +
+        '<div class="rcard-stats"><div class="rstat"><div class="rstat-val">'+r.miles+'</div><div class="rstat-lbl">Miles</div></div><div class="rstat"><div class="rstat-val">'+r.elevationM+'m</div><div class="rstat-lbl">Ascent</div></div><div class="rstat"><div class="rstat-val">'+r.hours+'h</div><div class="rstat-lbl">Time</div></div></div>' +
+        strip+
+        '<div class="rcard-tags">'+(r.tags||[]).map(function(t){return '<span class="tag">'+t+'</span>';}).join('')+'</div>' +
+      '</div>';
+    }).join('');
+  }
+  if(ml)ml.innerHTML=html;if(dl)dl.innerHTML=html;
+  var txt=routes.length+' route'+(routes.length!==1?'s':'');
+  if(mc)mc.textContent=txt;if(dc)dc.textContent=txt;
+}
+
+// ── GPX UPLOAD ─────────────────────────────────────────────────────────────
+function loadGPX(event){
+  var file=event.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var xml=new DOMParser().parseFromString(e.target.result,'application/xml');
+      var pts=[];
+      var src=xml.querySelectorAll('rtept');
+      if(!src.length)src=xml.querySelectorAll('trkpt');
+      if(!src.length)src=xml.querySelectorAll('wpt');
+      src.forEach(function(pt){var la=parseFloat(pt.getAttribute('lat')),lo=parseFloat(pt.getAttribute('lon'));if(!isNaN(la)&&!isNaN(lo))pts.push({lat:la,lng:lo});});
+      if(pts.length<2){showToast('⚠️ No route points found');return;}
+      var dist=0;
+      for(var i=0;i<pts.length-1;i++){var R=6371,dLa=(pts[i+1].lat-pts[i].lat)*Math.PI/180,dLo=(pts[i+1].lng-pts[i].lng)*Math.PI/180,a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(pts[i].lat*Math.PI/180)*Math.cos(pts[i+1].lat*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);dist+=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+      var miles=(dist*0.621371).toFixed(1);
+      var nameEl=xml.querySelector('name');
+      var gpxName=nameEl&&nameEl.textContent&&nameEl.textContent.trim()&&nameEl.textContent.trim()!=='Route'?nameEl.textContent.trim():file.name.replace('.gpx','').replace(/_/g,' ');
+      var nr={id:Date.now(),name:gpxName,aonb:'all',aonbLabel:'Uploaded GPX route',region:'See route on map',difficulty:miles<4?'easy':miles<8?'moderate':'hard',miles:miles,elevationM:'—',hours:'—',transport:'car',train:null,bus:null,isNationalRail:false,gpxSource:file.name,description:'Route loaded from '+file.name+'. '+pts.length+' real GPS waypoints.',highlights:[pts.length+' GPS waypoints',miles+' miles'],tags:['GPX upload'],waypoints:pts};
+      ROUTES.unshift(nr);filterRoutes();openDetail(nr.id);showToast('✓ '+pts.length+' waypoints loaded');
+    }catch(err){showToast('⚠️ Could not read GPX file');}
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ── DETAIL ─────────────────────────────────────────────────────────────────
+function openDetail(id){
+  var r=ROUTES.find(function(x){return x.id===id;}); if(!r)return;
+  currentRoute=r;
+  var cap=function(s){return s.charAt(0).toUpperCase()+s.slice(1);};
+  document.getElementById('detailTopTitle').textContent=r.name;
+  document.getElementById('dAonbLabel').textContent=r.aonbLabel;
+  document.getElementById('dName').textContent=r.name;
+  document.getElementById('dRegion').textContent=r.region;
+  document.getElementById('dMiles').textContent=r.miles;
+  document.getElementById('dElev').textContent=r.elevationM+(r.elevationM!=='—'?'m':'');
+  document.getElementById('dTime').textContent=r.hours+(r.hours!=='—'?'h':'');
+  document.getElementById('dDiff').textContent=cap(r.difficulty);
+  document.getElementById('dDesc').textContent=r.description;
+  document.getElementById('dHighlights').innerHTML=(r.highlights||[]).map(function(h){return '<span class="hl">'+h+'</span>';}).join('');
+  document.getElementById('gpxBadge').innerHTML=r.gpxSource?'<div class="gpx-badge">📍 Real GPS route · '+r.waypoints.length+' waypoints</div>':'';
+  var tb='';
+  if(r.train){
+    var trainContent='<div class="tb-station-row"><span class="tb-station-dot start"></span><div><div class="tb-station">'+r.train.station+' station</div><div class="tb-detail">'+r.train.line+'</div><div class="tb-walk">🚶 '+r.train.walkMins+' min walk to trail start</div></div></div>';
+    if(r.trainEnd){
+      trainContent+='<div class="tb-divider"></div>';
+      trainContent+='<div class="tb-station-row"><span class="tb-station-dot end"></span><div><div class="tb-station">'+r.trainEnd.station+' station</div><div class="tb-detail">'+r.trainEnd.line+'</div><div class="tb-walk">🚶 '+r.trainEnd.walkMins+' min walk from trail finish</div></div></div>';
+      tb='<div class="transport-box train"><div class="tb-title">🚆 Getting there &amp; back by train</div>'+trainContent+(r.isNationalRail?'<div class="nr-badge">🟠 Official National Rail promoted walk</div>':'')+'</div>';
+    } else {
+      tb='<div class="transport-box train"><div class="tb-title">🚆 Getting there by train</div>'+trainContent+(r.isNationalRail?'<div class="nr-badge">🟠 Official National Rail promoted walk</div>':'')+'</div>';
+    }
+  }
+  else if(r.bus){tb='<div class="transport-box bus"><div class="tb-title">🚌 Getting there by bus</div><div class="tb-station">'+r.bus.stop+'</div><div class="tb-detail">'+r.bus.line+'<br>'+r.bus.walkMins+' min walk to trail start</div></div>';}
+  else{tb='<div class="transport-box car"><div class="tb-title">🚗 Car recommended</div><div class="tb-detail">Car park available at trail start.</div></div>';}
+  document.getElementById('transportBox').innerHTML=tb;
+  document.getElementById('dPeekName').textContent=r.name;
+
+  renderPlants(r.id);
+  document.getElementById('shareTxt').textContent='📤 Share this route';
+  document.getElementById('shareBtn').classList.remove('copied');
+
+  // Start at peek — just name visible, maximum map
+  detailState='peek';
+  var dp=document.getElementById('detailPanel');
+  dp.className='detail-panel open peek';
+
+  // Hide filters and route list for full map view
+  var fb=document.getElementById('filterBar');
+  var tb=document.getElementById('topBar');
+  if(fb)fb.classList.add('hidden');
+  if(tb)tb.classList.add('detail-active');
+  sheetState='peek'; us();
+
+  plotMain(r);
+  if (pubsVisible) drawPubs(r.id);
+}
+
+function closeDetail(){
+  pubsVisible = false;
+  clearPubs();
+  var b1 = document.getElementById('pubToggleDetail');
+  if (b1) { b1.className = 'pub-toggle-btn'; b1.innerHTML = '🍺 Show pubs &amp; cafés on map'; }
+  var dp=document.getElementById('detailPanel');
+  dp.className='detail-panel';
+  // Restore filters and topbar
+  var fb=document.getElementById('filterBar');
+  var tb=document.getElementById('topBar');
+  if(fb)fb.classList.remove('hidden');
+  if(tb)tb.classList.remove('detail-active');
+  sheetState='half'; us();
+  mainLayers.forEach(function(l){if(map)map.removeLayer(l);}); mainLayers=[];
+  // Re-show all pins
+  setTimeout(function(){plotAllPins();},100);
+}
+
+function plotMain(r){
+  mainLayers.forEach(function(l){if(map)map.removeLayer(l);});
+  mainLayers=plotMap(map,[],r);
+  var pts=r.waypoints.map(function(w){return[w.lat,w.lng];});
+  var allPts=pts.slice();
+  if(r.train) allPts.push([r.train.stationLat,r.train.stationLng]);
+  if(r.trainEnd) allPts.push([r.trainEnd.stationLat,r.trainEnd.stationLng]);
+  map.fitBounds(L.latLngBounds(allPts),{paddingTopLeft:[40,80],paddingBottomRight:[40,200],maxZoom:15});
+}
+
+function plotMap(m,arr,r){
+  var result=arr||[];
+  var pts=r.waypoints.map(function(w){return[w.lat,w.lng];});
+  result.push(L.polyline(pts,{color:'#2d5a27',weight:4,opacity:0.9,lineJoin:'round',lineCap:'round'}).addTo(m));
+  result.push(L.marker(pts[0],{icon:mi('#2d5a27','S'),zIndexOffset:200}).bindPopup('<b>Start</b>').addTo(m));
+  result.push(L.marker(pts[pts.length-1],{icon:mi('#c0392b','F'),zIndexOffset:200}).bindPopup('<b>Finish</b>').addTo(m));
+
+  // Station marker(s)
+  var stIcon=L.divIcon({className:'',html:'<div style="width:28px;height:28px;border-radius:8px;background:#1a3a7a;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🚆</div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
+  if(r.train){
+    result.push(L.marker([r.train.stationLat,r.train.stationLng],{icon:stIcon,zIndexOffset:150}).bindPopup('<b>'+r.train.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.train.line+'</span><br><span style="font-size:12px">🚶 '+r.train.walkMins+' min walk to trail start</span>').addTo(m));
+  }
+  // End station for linear walks
+  if(r.trainEnd){
+    var stEndIcon=L.divIcon({className:'',html:'<div style="width:28px;height:28px;border-radius:8px;background:#2d5a27;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🚆</div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
+    result.push(L.marker([r.trainEnd.stationLat,r.trainEnd.stationLng],{icon:stEndIcon,zIndexOffset:150}).bindPopup('<b>'+r.trainEnd.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.trainEnd.line+'</span><br><span style="font-size:12px">🚶 '+r.trainEnd.walkMins+' min walk from trail finish</span>').addTo(m));
+  }
+
+  // Highlight markers with history
+  if(r.highlightMarkers){
+    r.highlightMarkers.forEach(function(h){
+      var hlIcon=L.divIcon({
+        className:'',
+        html:'<div style="width:32px;height:32px;border-radius:50%;background:#fff;border:2.5px solid #e8a020;box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">'+h.icon+'</div>',
+        iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-18]
+      });
+      var popupHtml='<div class="hl-popup">' +
+        '<div class="hl-popup-icon">'+h.icon+'</div>' +
+        '<div class="hl-popup-name">'+h.name+'</div>' +
+        '<div class="hl-popup-history">'+h.history+'</div>' +
+      '</div>';
+      result.push(L.marker([h.lat,h.lng],{icon:hlIcon,zIndexOffset:100}).bindPopup(popupHtml,{maxWidth:280}).addTo(m));
+    });
+  }
+
+  return result;
+}
+
+function mi(color,label){return L.divIcon({className:'',html:'<div style="width:26px;height:26px;border-radius:50%;background:'+color+';border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:-apple-system,sans-serif;">'+label+'</div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14]});}
+
+function plotAllPins(){
+  if(!map||typeof L==='undefined') return;
+  // Show a small green dot for start of each route on the overview map
+  var allPts=[];
+  ROUTES.forEach(function(r){
+    if(!r.waypoints||!r.waypoints.length) return;
+    var pt=r.waypoints[0];
+    allPts.push([pt.lat,pt.lng]);
+    var icon=L.divIcon({className:'',html:'<div style="width:10px;height:10px;border-radius:50%;background:#2d5a27;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer"></div>',iconSize:[10,10],iconAnchor:[5,5]});
+    L.marker([pt.lat,pt.lng],{icon:icon,zIndexOffset:50}).bindPopup('<b>'+r.name+'</b><br><span style="font-size:12px">Tap to explore</span>').on('click',function(){openDetail(r.id);}).addTo(map);
+  });
+  if(allPts.length) map.fitBounds(L.latLngBounds(allPts),{padding:[60,60],maxZoom:12});
+}
+
+
+
+// ── PUB & CAFE DATA ────────────────────────────────────────────────────────
+var PUB_DATA = {
+  1: [ // Seven Sisters & Friston Forest
+    {lat:50.7571,lng:0.2178,name:"Tiger Inn",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green. Harvey's ales and Beachy Head brewery beers. Busy in summer — booking recommended. Half a mile from Birling Gap.",google:"4.1",source:"Google"},
+    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café right on the Seven Sisters. Hot food, cakes and drinks with views to France on a clear day. Open daily except Christmas.",google:"4.3",source:"National Trust"},
+    {lat:50.7568,lng:0.1589,name:"Cuckmere Inn",type:"pub",rating:"4.2★",desc:"Traditional pub overlooking the Cuckmere Valley and river. Perfect lunch stop mid-walk. River views from the beer garden.",google:"4.2",source:"Google"}
+  ],
+  2: [ // Amberley to Arundel
+    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food and a lovely garden. Walkers warmly welcomed.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
+    {lat:50.9085,lng:-0.5320,name:"The Black Horse",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village. A step up from a regular pub — locally sourced ingredients and an excellent wine list. Stunning raised garden.",google:"4.4",source:"Google"},
+    {lat:50.8748,lng:-0.5415,name:"The Sportsman",type:"pub",rating:"4.2★",desc:"Community-owned 17th-century inn with conservatory overlooking Amberley Wild Brooks. Three changing local ales. CAMRA Branch Pub of the Year 2026. Dog friendly.",google:"4.2",source:"CAMRA"}
+  ],
+  3: [ // Amberley Circular
+    {lat:50.9080,lng:-0.5476,name:"The Bridge Inn",type:"pub",rating:"4.5★",desc:"CAMRA's Best Loved Local Pub in Sussex 2026. Two minutes from Amberley station. Real ales, home-cooked food, lovely garden. Walkers always welcome.",google:"4.5",source:"Google / Muddy Stilettos Awards"},
+    {lat:50.9085,lng:-0.5320,name:"The Black Horse",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village with a stunning raised garden. Locally sourced seasonal food, excellent wine list.",google:"4.4",source:"Google"},
+    {lat:50.9085,lng:-0.5320,name:"Amberley Tea Rooms",type:"cafe",rating:"4.3★",desc:"Excellent reputation for cream teas and light lunches in the heart of Amberley village. Perfect end to a walk.",google:"4.3",source:"Google"}
+  ],
+  4: [ // Chiltern Link
+    {lat:51.7056,lng:-0.6112,name:"The Queen's Head",type:"pub",rating:"4.2★",desc:"Well-placed for exploring historic Church Street and the Chesham Old Town. Traditional local pub with real fires and a welcoming atmosphere.",google:"4.2",source:"Google"},
+    {lat:51.7583,lng:-0.7120,name:"The Bedford Arms",type:"pub",rating:"4.3★",desc:"Handily placed along the Chess Valley walk at Chenies. Popular walkers' stop with good food and a lovely position by the river.",google:"4.3",source:"Google"},
+    {lat:51.7312,lng:-0.7020,name:"Cock & Rabbit at The Lee",type:"pub",rating:"4.4★",desc:"Beside a picturesque village green shaped by Arthur Liberty, founder of Liberty of London. Excellent food, real fires, quintessential Chilterns pub.",google:"4.4",source:"Google"}
+  ],
+  5: [ // Runnymede to Windsor
+    {lat:51.4419,lng:-0.5519,name:"The Bells of Ouzeley",type:"pub",rating:"4.2★",desc:"Riverside pub in Old Windsor — an idyllic Thames-side stop. Charming setting by the water, classic pub food and a good beer garden.",google:"4.2",source:"Google"},
+    {lat:51.4855,lng:-0.6075,name:"The Two Brewers",type:"pub",rating:"4.3★",desc:"On Park Street at the entrance to Windsor's Long Walk — one of Windsor's most beloved pubs. Small but perfectly formed, welcoming to walkers and dogs.",google:"4.3",source:"Google / Windsor Council"},
+    {lat:51.4855,lng:-0.6078,name:"The Boatman",type:"pub",rating:"4.2★",desc:"Serving Windsor since 1829 with waterfront views of the Thames. Formerly The King's Head, locals know it as The Donkey House. Seasonal menus, great Thames views.",google:"4.2",source:"Google"}
+  ],
+  6: [ // Knole Park
+    {lat:51.2707,lng:0.1930,name:"The White Hart",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the perfect post-walk pub. 300-year-old coaching inn with a superb cask ale selection. Frequently cited as a favourite after a deer park walk.",google:"4.4",source:"The Kent Tourist / Google"},
+    {lat:51.2707,lng:0.1935,name:"NT Café at Knole House",type:"cafe",rating:"4.2★",desc:"National Trust café inside Knole House — excellent stop if you're visiting the house. Good coffee, cakes and light lunches in a historic setting.",google:"4.2",source:"National Trust"},
+    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",type:"pub",rating:"4.5★",desc:"Right on the doorstep of Knole Park. Named one of Kent's best pubs — legendary Sunday roasts, double smashburgers, fresh fish. Run with genuine warmth.",google:"4.5",source:"Kent Online"}
+  ],
+  7: [ // Woldingham
+    {lat:51.2900,lng:-0.0516,name:"Botley Hill Farmhouse",type:"pub",rating:"4.4★",desc:"Sits at the highest point of the North Downs Way with panoramic views. Part of the Titsey Estate — serves their own Marmaduke Farmhouse Cider, estate-reared beef and venison. Highly rated.",google:"4.4",source:"Surrey Live / Google"},
+    {lat:51.2612,lng:-0.0423,name:"The Old Ship, Tatsfield",type:"pub",rating:"4.2★",desc:"Traditional village pub on the green in Tatsfield, sitting up on the North Downs. Retains all the character of an old English pub with a lovely garden.",google:"4.2",source:"Google"},
+    {lat:51.2657,lng:-0.0550,name:"The Bull Inn, Limpsfield",type:"pub",rating:"4.1★",desc:"Traditional free house in Limpsfield on the North Downs. Cosy atmosphere, good food and well-kept ales. Dog friendly.",google:"4.1",source:"Google"}
+  ],
+  8: [ // Sevenoaks Circular
+    {lat:51.2707,lng:0.1930,name:"The White Hart",type:"pub",rating:"4.4★",desc:"Directly opposite Knole Park — the classic post-walk destination in Sevenoaks. 300-year-old coaching inn with outstanding cask ales.",google:"4.4",source:"The Kent Tourist / Google"},
+    {lat:51.2650,lng:0.2032,name:"The Bucks Head, Godden Green",type:"pub",rating:"4.5★",desc:"Just off the Knole Park walks — one of Kent's best pubs. Legendary roasts, fresh fish, genuinely excellent cooking in a warm atmosphere.",google:"4.5",source:"Kent Online"},
+    {lat:51.3053,lng:0.1701,name:"George & Dragon, Chipstead",type:"pub",rating:"4.5★",desc:"Celebrated 16th-century gastropub in Chipstead. Sevenoaks Pub of the Year 2020. Seasonal modern British menu, local farms, rustic beams and roaring fires.",google:"4.5",source:"Visit Kent Guide"}
+  ],
+  9: [ // Seaford to Eastbourne
+    {lat:50.7711,lng:0.0959,name:"Seaford pubs & cafés",type:"cafe",rating:"4.0★",desc:"Several cafés and pubs in Seaford town for pre-walk fuel — Old Plough Seaford highly rated. Convenient from Seaford station.",google:"4.0",source:"Google"},
+    {lat:50.7626,lng:0.1568,name:"Birling Gap NT Café",type:"cafe",rating:"4.3★",desc:"National Trust cliff-top café mid-route on the Seven Sisters. Hot food, cakes and unbeatable Channel views. Perfect halfway stop.",google:"4.3",source:"National Trust"},
+    {lat:50.7571,lng:0.2178,name:"Tiger Inn",type:"pub",rating:"4.1★",desc:"Classic 13th-century flint pub on East Dean village green just off the cliff path. Harvey's ales and Beachy Head brewery beers.",google:"4.1",source:"Google"}
+  ],
+  10: [ // Tunbridge Wells Circular
+    {lat:51.1623,lng:0.2520,name:"The Hare, Langton Green",type:"pub",rating:"4.4★",desc:"Beautiful pub on Langton Green village with a huge garden — the classic starting point for Tunbridge Wells circular walks. Welcoming to walkers, excellent food.",google:"4.4",source:"Visit Tunbridge Wells"},
+    {lat:51.1631,lng:0.2786,name:"George & Dragon, Speldhurst",type:"pub",rating:"4.5★",desc:"Award-winning 13th-century pub in Speldhurst village. Seasonal menu from local Kent farms. One of the finest country pubs in SE England — booking essential.",google:"4.5",source:"Visit Kent"},
+    {lat:51.1093,lng:0.2382,name:"Crown Inn, Groombridge",type:"pub",rating:"4.3★",desc:"Historic pub in the charming village of Groombridge, next to Groombridge Place. Real ales, good food and a lovely garden by the stream.",google:"4.3",source:"AllTrails / Google"}
+  ]
+};
+
+var pubsVisible = false;
+var pubLayers = [];
+
+function togglePubs() {
+  pubsVisible = !pubsVisible;
+  var cls = 'pub-toggle-btn' + (pubsVisible ? ' active' : '');
+  var b1 = document.getElementById('pubToggleDetail');
+  if (b1) {
+    b1.className = cls;
+    b1.innerHTML = pubsVisible ? '🍺 Hide pubs &amp; cafés' : '🍺 Show pubs &amp; cafés on map';
+  }
+  if (pubsVisible && currentRoute) {
+    drawPubs(currentRoute.id);
+  } else {
+    clearPubs();
+  }
+}
+
+function drawPubs(routeId) {
+  clearPubs();
+  if (!pubsVisible || !map || typeof L === 'undefined') return;
+  var pubs = PUB_DATA[routeId];
+  if (!pubs) return;
+  pubs.forEach(function(p) {
+    var isPub = p.type === 'pub';
+    var icon = L.divIcon({
+      className: '',
+      html: '<div style="width:32px;height:32px;border-radius:50%;background:' + (isPub ? '#f5e6c0' : '#e8f0e8') + ';border:2.5px solid ' + (isPub ? '#c08030' : '#2d7a27') + ';box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">' + (isPub ? '🍺' : '☕') + '</div>',
+      iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
+    });
+    var popup = '<div class="pub-popup">' +
+      '<div class="pub-popup-type">' + (isPub ? '🍺 Pub' : '☕ Café') + '</div>' +
+      '<div class="pub-popup-name">' + p.name + '</div>' +
+      '<div class="pub-popup-rating">★ ' + p.rating + ' · ' + p.source + '</div>' +
+      '<div class="pub-popup-desc">' + p.desc + '</div>' +
+    '</div>';
+    pubLayers.push(L.marker([p.lat, p.lng], {icon: icon, zIndexOffset: 80}).bindPopup(popup, {maxWidth: 260}).addTo(map));
+  });
+}
+
+function clearPubs() {
+  pubLayers.forEach(function(l) { if (map) map.removeLayer(l); });
+  pubLayers = [];
+}
+
+// ── PLANT DATA ────────────────────────────────────────────────────────────────
+var PLANT_DATA = {
+  'chalk_downland': [
+    {name:"Wild Thyme",type:"edible",emoji:"🌿",season:"May–Sep",desc:"Carpets chalk turf with tiny pink flowers. Strongly aromatic — use exactly like garden thyme. Romans used it to purify temples. Medieval monks made thyme tea for coughs and anxiety. The ancient Greeks burned it as incense, believing it gave courage.",use:"Edible & medicinal"},
+    {name:"Salad Burnet",type:"edible",emoji:"🌱",season:"Year-round",desc:"Tastes distinctly of fresh cucumber. The Elizabethans added it to salads and wine. Francis Bacon recommended planting it along pathways so the scent released underfoot. One of the few plants that stays green all winter on the Downs.",use:"Edible"},
+    {name:"Elder",type:"edible",emoji:"⚪",season:"Flowers May–Jun · Berries Aug–Sep",desc:"Flowers make classic elderflower cordial — strip from stalks, the stalks are toxic. Berries for wine and syrup — always cook first as raw berries cause nausea. Used for centuries for colds and flu. Every part except ripe flowers and cooked berries is mildly toxic.",use:"Edible — cook berries",warning:"⚠️ Raw berries cause sickness. Stalks toxic."},
+    {name:"Yarrow",type:"medicinal",emoji:"🌼",season:"Jun–Nov",desc:"Known as Soldier's Woundwort — packed into wounds on battlefields since Ancient Egypt. The Roman general Achilles was said to have used it on his men at Troy, hence its Latin name Achillea. Feathery leaves are edible but very bitter.",use:"Medicinal"},
+    {name:"Wild Marjoram",type:"edible",emoji:"💜",season:"Jul–Sep",desc:"This IS oregano — the same species, far more aromatic on stressed chalk soil than cultivated varieties. Romans associated it with happiness and wove it into bridal crowns. Bees adore it — South Downs honey owes much of its flavour to wild marjoram.",use:"Edible"},
+    {name:"Rock Samphire",type:"edible",emoji:"🌿",season:"Jun–Sep",desc:"Grows on chalk cliffs with an intense spicy-fennel flavour. Shakespeare mentions cliff gatherers risking their lives to collect it in King Lear. Pickled and sold at Covent Garden in Tudor times. John Evelyn called it 'the finest of all pickles.'",use:"Edible"},
+    {name:"Sea Beet",type:"edible",emoji:"🍃",season:"Apr–Nov",desc:"Wild ancestor of beetroot, sugar beet, spinach beet and chard. Found on chalky clifftops and coastal paths. Nutritionally exceptional. Cook leaves exactly like spinach. Used as food in Britain since prehistoric times — one of our oldest food plants.",use:"Edible"},
+    {name:"Hawthorn",type:"edible",emoji:"🌸",season:"Flowers Apr–May · Berries Aug–Nov",desc:"Blossom edible in spring — strip flowers from stems to add to salads. Red haws in autumn make excellent jelly, rich in Vitamin C and antioxidants. Used in traditional heart medicine for centuries. The dense thorny wood makes the best natural firelighter — burns even when wet.",use:"Edible & bushcraft"},
+    {name:"Deadly Nightshade",type:"poisonous",emoji:"🍒",season:"Berries Aug–Oct",desc:"The most dangerous plant on chalk downland. Shiny black berries resemble cherries. Just 2–5 berries can kill a child. Used by medieval assassins — the Roman Emperor Augustus is said to have been poisoned with it. Belladonna eye drops were fashionable in Renaissance Italy to dilate pupils.",use:"HIGHLY POISONOUS",warning:"⚠️ FATAL — 2–5 berries can kill a child"},
+    {name:"Pyramidal Orchid",type:"protected",emoji:"🌸",season:"Jun–Jul",desc:"A perfect pyramid of pink flowers on ancient chalk grassland — finding it means you are on botanically important land undisturbed for centuries. Up to 50 different plant species grow in one square metre of chalk turf. Protected under law — admire but never pick.",use:"Protected species — look don't touch",warning:"⚠️ Illegal to pick — protected species"}
+  ],
+  'ancient_woodland': [
+    {name:"Wild Garlic (Ramsons)",type:"edible",emoji:"🌿",season:"Mar–May",desc:"Carpets ancient woodland floors white in spring with an unmistakeable garlic smell. Entire plant edible — leaves, flowers, seeds, bulbs. Make pesto, butter, soup or eat raw. Vikings used it medicinally. WARNING: deadly Lily of the Valley grows nearby and looks similar before flowering — always check for the garlic smell.",use:"Edible",warning:"⚠️ Lily of the Valley looks similar — check for garlic scent"},
+    {name:"Wood Sorrel",type:"edible",emoji:"🍀",season:"Mar–Jul",desc:"Delicate clover-like plant in deep woodland shade with a sharp lemon-apple taste. Eaten since medieval times — the French call it pain de coucou. Cooks use it to finish fish dishes. Contains oxalic acid so eat in moderation only.",use:"Edible — small amounts",warning:"⚠️ Contains oxalic acid — moderation only"},
+    {name:"Stinging Nettle",type:"edible",emoji:"🌿",season:"Young shoots Feb–May",desc:"More iron than spinach, packed with Vitamins C and K. Young shoots blanched for soup, beer or as spinach. The outer stem fibres make some of the strongest natural cordage — nettle cloth predates linen in Britain. Sting neutralised completely by cooking or drying.",use:"Edible & bushcraft (cordage)"},
+    {name:"Hazel",type:"edible",emoji:"🌰",season:"Nuts Sep–Oct",desc:"Coppiced in British woodland for 6,000 years — the most ancient form of woodland management. Hazelnuts edible raw or roasted. Young flexible rods used for baskets, hurdles and wattle. The classic bushcraft firesteel striker. Divining rods traditionally cut from hazel.",use:"Edible & bushcraft"},
+    {name:"Ground Elder",type:"edible",emoji:"🌿",season:"Mar–Jun",desc:"Introduced by the Romans as a vegetable — still eaten across Northern Europe today. The bane of gardeners everywhere, spreading relentlessly. Young leaves taste of parsley and carrot. The main spring vegetable of British monasteries in the Middle Ages. Blanch like spinach.",use:"Edible — young leaves"},
+    {name:"Beech Nut",type:"edible",emoji:"🍂",season:"Oct–Nov",desc:"Triangular nuts edible raw or roasted — eat in moderation as they contain small amounts of mildly toxic fagin. Beech leaves in May are wonderfully tender and edible in salads. The wood is the finest for burning and turning. Chiltern beeches supplied the furniture industry of High Wycombe for 300 years.",use:"Edible — moderation",warning:"⚠️ Large quantities mildly toxic"},
+    {name:"Foxglove",type:"poisonous",emoji:"💜",season:"Jun–Aug",desc:"Spectacular purple spires in woodland clearings and rides. Deeply toxic — the source of digitalis, still used today in heart medication. Two to three leaves can kill an adult. The name comes from 'folk's glove' — the fairy folk's gloves in English folklore.",use:"HIGHLY POISONOUS",warning:"⚠️ FATAL — do not touch"},
+    {name:"Blackberry",type:"edible",emoji:"🫐",season:"Aug–Oct",desc:"Rich in Vitamins C and K. Young peeled spring shoots also edible. Canes make excellent cordage and fish traps in bushcraft. The leaves used as a wound dressing and for sore throats. The original English bramble thickets provided impenetrable defensive barriers around settlements.",use:"Edible & bushcraft"},
+    {name:"Lords & Ladies",type:"poisonous",emoji:"⚠️",season:"Berries Aug–Sep",desc:"Bright orange-red berries on a single stalk in woodland. Every part intensely irritating to the mouth and throat. Grows alongside wild garlic, which it resembles before flowering — a dangerous confusion. The starchy root was used to starch Elizabethan ruffs after extensive washing to remove toxins.",use:"POISONOUS",warning:"⚠️ All parts toxic — often found near wild garlic"},
+    {name:"Honeysuckle",type:"edible",emoji:"🌼",season:"Flowers Jun–Sep",desc:"Flowers edible — make syrup, cordial or eat raw. Medicinally used as a cough remedy for centuries. Flexible stems used in basketry. WARNING: the red or black paired berries are TOXIC — do not confuse with the flowers.",use:"Flowers edible only",warning:"⚠️ Berries are toxic — flowers only"}
+  ],
+  'thames_riverside': [
+    {name:"Watercress",type:"edible",emoji:"🌿",season:"Year-round",desc:"Grows in clear chalk streams. More Vitamin C than oranges, more calcium than milk. Eaten in Britain since the Iron Age. Only harvest from fast-flowing clean water well away from livestock — watercress can harbour liver fluke if cattle graze upstream.",use:"Edible",warning:"⚠️ Only from clean fast-flowing water — risk of liver fluke"},
+    {name:"Meadowsweet",type:"medicinal",emoji:"🌸",season:"Jun–Sep",desc:"The almond-scented cream flowers led directly to aspirin — salicylic acid was first identified in meadowsweet in 1897. The whole plant was strewn on floors in medieval halls as a perfume and insect repellent. One of the three most sacred herbs of the Druids.",use:"Medicinal — aspirin ancestor"},
+    {name:"Water Mint",type:"edible",emoji:"🌿",season:"Jun–Sep",desc:"The original British mint — peppermint is a cultivated hybrid of water mint. Intensely aromatic, used in cooking and tea. Roman soldiers were paid partly in mint. A bundle hung in a room repels mice and insects. Grows in masses along the Thames margins.",use:"Edible & medicinal"},
+    {name:"Reed",type:"bushcraft",emoji:"🌾",season:"Year-round",desc:"Perhaps the most useful plant to prehistoric Britons — thatching, basket weaving, arrow shafts, fire-bow drill spindles and bedding material. The rhizomes are edible, dried and ground into flour. Young shoots edible in spring like asparagus. Reed beds provide crucial habitat for marsh harriers and bitterns.",use:"Bushcraft — multiple uses"},
+    {name:"Burdock",type:"edible",emoji:"🌱",season:"Young roots spring",desc:"George de Mestral invented Velcro in 1941 after burdock burrs stuck to his dog. Young roots edible peeled and boiled. The classic British soft drink dandelion and burdock uses both plants. Leaves used as bushcraft food wraps. The burrs make excellent natural Velcro for attaching things in the field.",use:"Edible & bushcraft"},
+    {name:"Wild Hops",type:"edible",emoji:"🌿",season:"Shoots Apr–May · Flowers Aug",desc:"Wild ancestor of cultivated hops, climbing through riverside hedgerows. Young shoots taste like asparagus. Dry female flowers for strongly sedative tea — and the essential bittering ingredient in ale. Britain's most important economic hedgerow plant historically, used in beer since the 15th century.",use:"Edible & medicinal"},
+    {name:"Blackthorn (Sloe)",type:"edible",emoji:"🫐",season:"Berries Sep–Nov",desc:"Extremely sour raw — essential for sloe gin, best harvested after first frost. One of the densest, hardest British woods — used for Irish shillelagh walking sticks and blackthorn clubs. The thorns were used as fish hooks and pins. The Glastonbury Thorn legend involves a blackthorn.",use:"Edible (after frost) & bushcraft"},
+    {name:"Hemlock Water Dropwort",type:"poisonous",emoji:"⚠️",season:"May–Jul",desc:"The most poisonous plant in Britain, growing in wet ground and river margins. Looks similar to watercress, wild celery and water parsley. White carrot-like roots are extremely toxic — called dead man's fingers. Responsible for more deaths than any other UK plant.",use:"EXTREMELY POISONOUS",warning:"⚠️ Most deadly plant in Britain — fatal in small quantities"},
+    {name:"Cleavers (Goosegrass)",type:"edible",emoji:"🌿",season:"Mar–Jun",desc:"The sticky plant that attaches to clothing — its brilliant dispersal mechanism inspired some of the earliest biomimicry research. Young leaves and stems edible (taste of fresh peas). Made into a spring detox tea by herbalists for centuries. Dried seeds used as a coffee substitute.",use:"Edible"},
+    {name:"Guelder Rose",type:"edible",emoji:"🍒",season:"Berries Sep–Nov",desc:"Brilliant red clusters along riverbanks. Cooked berries high in Vitamin C — used in Scandinavia for jam and liqueur. Raw berries mildly toxic. The flexible young stems used in basket weaving. The national plant of Ukraine — its red berries are a major symbol in Ukrainian folk art and embroidery.",use:"Edible when cooked",warning:"⚠️ Raw berries mildly toxic — cook before eating"}
+  ],
+  'high_weald': [
+    {name:"Sweet Chestnut",type:"edible",emoji:"🌰",season:"Oct–Nov",desc:"Introduced by the Romans as a food crop. The Weald was historically called the Garden of England partly for its chestnut coppice. Roast, boil or dry into flour. Most chestnut paling fencing in England still comes from Wealden coppice woods — a 2,000-year-old tradition.",use:"Edible & bushcraft"},
+    {name:"Wild Service Tree",type:"edible",emoji:"🍂",season:"Berries Sep–Nov",desc:"A rare indicator of ancient woodland — finding one means the wood predates 1600. Small brown berries called chequers, eaten after first frost, taste of dates and tamarind. Many English pubs named The Chequers hung bunches of these berries outside as a sign.",use:"Edible — after frost"},
+    {name:"Hazel",type:"edible",emoji:"🌰",season:"Sep–Oct",desc:"The most important coppice tree of the Weald for 6,000 years. Hazelnuts edible raw or roasted. Coppiced poles used for hurdles, thatching spars and wattle and daub walls. The earliest Wealden settlements were literally built from hazel.",use:"Edible & bushcraft"},
+    {name:"Pignut",type:"edible",emoji:"🌱",season:"Apr–Jun",desc:"Delicate white flowers in woodland glades. Underground tubers taste of hazelnuts — dug by pigs and children for centuries. Beatrix Potter wrote about them. Very hard to find the tuber without the plant dying, so only collect sparingly from abundant patches.",use:"Edible"},
+    {name:"Herb Robert",type:"medicinal",emoji:"🌸",season:"Apr–Oct",desc:"Tiny pink geranium with a strong smell when crushed. Used across Europe for thousands of years to staunch bleeding. Recent research confirms genuine antimicrobial properties. Grows wherever humans have disturbed the soil — a reliable companion on any walk.",use:"Medicinal"},
+    {name:"Sweet Cicely",type:"edible",emoji:"🌿",season:"Apr–Jun",desc:"Large ferny-leaved plant at woodland edges with an intense anise smell. The whole plant is edible and very sweet — used as a natural sugar substitute. Cooking with sweet cicely reduces the tartness of fruit, allowing less sugar to be used. Medicinally used as a gentle tonic.",use:"Edible & medicinal"},
+    {name:"Yew",type:"poisonous",emoji:"🍒",season:"Berries Sep–Nov",desc:"Ancient yews in Wealden churchyards are among Britain's oldest living things — some over 2,000 years. Red berry flesh alone is edible but the seed inside is TOXIC. Every other part of the tree is lethal. English longbows were made exclusively from yew — the Weald supplied bows for Agincourt.",use:"POISONOUS",warning:"⚠️ ALL parts except red berry flesh are deadly"},
+    {name:"Crab Apple",type:"edible",emoji:"🍎",season:"Sep–Nov",desc:"Wild ancestor of all domestic apples. Too sour raw but makes superb jelly with blackberries. The Weald's iron-smelting industry used crab apple charcoal. The hard dense wood is prized for tool handles and mallet heads — among the finest British hardwoods for turning.",use:"Edible (cooked) & bushcraft"},
+    {name:"Rowan",type:"edible",emoji:"🍒",season:"Berries Aug–Oct",desc:"Brilliant red berries on hillsides and woodland edges. Sour raw but make excellent jelly with game. Traditionally planted by cottage doors to ward off witches across Britain. Rich in Vitamin C — used against scurvy by sailors. The name comes from the Norse runar, meaning charm.",use:"Edible (cooked)"},
+    {name:"Arum (Lords & Ladies)",type:"poisonous",emoji:"⚠️",season:"Berries Aug–Sep",desc:"Orange-red berries on woodland floors. Every part toxic — causes intense burning and swelling of mouth and throat. The starchy root was used to make starch for Elizabethan ruffs — called Portland Arrowroot — but required extensive washing to remove toxins first.",use:"POISONOUS",warning:"⚠️ All parts toxic — very attractive to children"}
+  ]
+};
+
+// Map routes to plant sets
+var ROUTE_PLANTS = {
+  1: 'chalk_downland',   // Seven Sisters
+  2: 'ancient_woodland', // Amberley to Arundel
+  3: 'ancient_woodland', // Amberley Circular
+  4: 'ancient_woodland', // Chiltern Link
+  5: 'thames_riverside', // Runnymede to Windsor
+  6: 'ancient_woodland', // Knole Park
+  7: 'ancient_woodland', // Woldingham
+  8: 'ancient_woodland', // Sevenoaks
+  9: 'chalk_downland',   // Seaford to Eastbourne
+  10: 'high_weald'       // Tunbridge Wells
+};
+
+var currentPlants = [];
+
+function renderPlants(routeId) {
+  var plantSet = ROUTE_PLANTS[routeId];
+  currentPlants = plantSet ? PLANT_DATA[plantSet] : [];
+  // Reset filter tabs to All
+  document.querySelectorAll('.pftab').forEach(function(t){
+    t.className='pftab';
+  });
+  var allTab = document.querySelector('.pftab');
+  if(allTab) allTab.className='pftab pf-active';
+  drawPlants(currentPlants);
+}
+
+function filterPlants(type, btn) {
+  // Update tab styles
+  document.querySelectorAll('.pftab').forEach(function(t){ t.className='pftab'; });
+  if(btn) btn.className = 'pftab pf-active' + (type!=='all' ? ' pf-'+type : '');
+  var filtered = type==='all' ? currentPlants : currentPlants.filter(function(p){ return p.type===type; });
+  drawPlants(filtered);
+}
+
+function drawPlants(plants) {
+  var el = document.getElementById('dPlants');
+  if (!el) return;
+  if (!plants || !plants.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#9b9b97;font-size:13px">No plants of this type on this route.</div>';
+    return;
+  }
+  var badgeClass = {edible:'badge-edible', medicinal:'badge-medicinal', bushcraft:'badge-bushcraft', poisonous:'badge-poisonous', protected:'badge-protected'};
+  var cardClass  = {edible:'edible', medicinal:'medicinal', bushcraft:'bushcraft', poisonous:'poisonous', protected:'protected'};
+  var badgeLabel = {edible:'🌿 Edible', medicinal:'💊 Medicinal', bushcraft:'🪓 Bushcraft', poisonous:'☠️ Poisonous', protected:'🔒 Protected'};
+  // Sort by natural discovery order: edible first, warnings last
+  var typeOrder = {edible:0, medicinal:1, bushcraft:2, poisonous:3, protected:4};
+  plants = plants.slice().sort(function(a,b){
+    return (typeOrder[a.type]||99) - (typeOrder[b.type]||99);
+  });
+  el.innerHTML = plants.map(function(p) {
+    var warning = p.warning ? '<div class="plant-warning">'+p.warning+'</div>' : '';
+    return '<div class="plant-card '+(cardClass[p.type]||'edible')+'">' +
+      '<div class="plant-card-top">' +
+        '<span class="plant-emoji">'+p.emoji+'</span>' +
+        '<span class="plant-name">'+p.name+'</span>' +
+        '<span class="plant-badge '+(badgeClass[p.type]||'badge-edible')+'">'+badgeLabel[p.type]+'</span>' +
+      '</div>' +
+      '<div class="plant-season">📅 '+p.season+'</div>' +
+      '<div class="plant-desc">'+p.desc+'</div>' +
+      warning +
+    '</div>';
+  }).join('');
+}
+
+function shareRoute(){
+  if(!currentRoute)return;
+  var r=currentRoute,cap=function(s){return s.charAt(0).toUpperCase()+s.slice(1);};
+  var transit=r.train?'\n🚆 '+r.train.station+' · '+r.train.line:r.bus?'\n🚌 '+r.bus.stop+' · '+r.bus.line:'\n🚗 Best reached by car';
+  var text='🥾 '+r.name+'\n📍 '+r.region+'\n📏 '+r.miles+' miles · '+r.hours+'h\n💪 '+cap(r.difficulty)+transit+'\n\n'+r.description+'\n\n✨ '+(r.highlights||[]).join(' · ');
+  if(navigator.share){navigator.share({title:r.name,text:text,url:window.location.href}).catch(function(){});}
+  else{navigator.clipboard.writeText(text).then(function(){document.getElementById('shareTxt').textContent='✓ Copied!';document.getElementById('shareBtn').classList.add('copied');setTimeout(function(){document.getElementById('shareTxt').textContent='📤 Share this route';document.getElementById('shareBtn').classList.remove('copied');},2500);});}
+}
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+</script>
+</body>
+</html>
