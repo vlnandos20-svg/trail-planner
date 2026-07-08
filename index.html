@@ -429,8 +429,9 @@ var ROUTES = [
     aonb:"south-downs", aonbLabel:"South Downs National Park",
     region:"Birling Gap, East Sussex",
     difficulty:"moderate", miles:"8.0", elevationM:"210", hours:"3.5–4",
-    transport:"bus", train:null,
-    bus:{stop:"East Dean or Birling Gap", line:"Bus 12/12A/12B Eastbourne–Brighton", walkMins:5},
+    transport:"train",
+    train:{station:"Eastbourne", stationLat:50.7683, stationLng:0.2842, line:"Southern · London Victoria via Lewes", walkMins:40},
+    bus:{stop:"East Dean or Birling Gap", line:"Bus 12/12A/12B from Eastbourne station", walkMins:5},
     isNationalRail:false, gpxSource:"gps-routes.co.uk",
     description:"A stunning circular walk taking in the iconic Seven Sisters chalk cliffs, the Cuckmere River estuary and the tranquil woodland of Friston Forest. Dramatic coastal scenery followed by peaceful forest trails — one of the finest walks on the South Downs.",
     highlights:["Seven Sisters chalk cliffs","Cuckmere Haven estuary","Friston Forest","Birling Gap NT café","Belle Tout Lighthouse views"],
@@ -621,6 +622,7 @@ var ROUTES = [
     difficulty:"easy", miles:"4.4", elevationM:"95", hours:"2",
     transport:"train",
     train:{station:"Sevenoaks", stationLat:51.2748, stationLng:0.1878, line:"Southeastern · London Charing Cross", walkMins:8},
+    trainEnd:{station:"Sevenoaks", stationLat:51.2748, stationLng:0.1878, line:"Southeastern · London Charing Cross", walkMins:20},
     bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
     description:"A shorter circular walk from Sevenoaks station through the rolling Kent countryside, taking in views of the Weald and passing through ancient woodland. A perfect half-day walk direct from London.",
     highlights:["Sevenoaks town","Kent countryside","Weald views","Ancient woodland","The Vine cricket ground"],
@@ -1075,14 +1077,25 @@ function plotMap(m,arr,r){
       result.push(L.marker([r.train.stationLat,r.train.stationLng],{icon:stIcon,zIndexOffset:150}).bindPopup('<b>'+r.train.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.train.line+'</span><br><span style="font-size:12px">🚶 '+r.train.walkMins+' min walk to trail start</span>').addTo(m));
     }
   }
-  result.push(L.marker(pts[pts.length-1],{icon:mi('#c0392b','F'),zIndexOffset:200}).bindPopup('<b>Finish</b>').addTo(m));
-  // End station for linear walks (separate from finish point)
-  if(r.trainEnd){
-    var stEndIcon=L.divIcon({className:'',html:'<div style="width:28px;height:28px;border-radius:8px;background:#2d5a27;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🚆</div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
-    // Only show if >150m from finish point
-    var endDist=0;
-    if(pts.length>0){var R3=6371000,dlat3=(r.trainEnd.stationLat-pts[pts.length-1][0])*Math.PI/180,dlng3=(r.trainEnd.stationLng-pts[pts.length-1][1])*Math.PI/180;var a3=Math.sin(dlat3/2)*Math.sin(dlat3/2)+Math.cos(pts[pts.length-1][0]*Math.PI/180)*Math.cos(r.trainEnd.stationLat*Math.PI/180)*Math.sin(dlng3/2)*Math.sin(dlng3/2);endDist=R3*2*Math.asin(Math.sqrt(a3));}
-    if(endDist>150){result.push(L.marker([r.trainEnd.stationLat,r.trainEnd.stationLng],{icon:stEndIcon,zIndexOffset:150}).bindPopup('<b>'+r.trainEnd.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.trainEnd.line+'</span><br><span style="font-size:12px">🚶 '+r.trainEnd.walkMins+' min walk from trail finish</span>').addTo(m));}
+  // Decide finish marker: if end station <=150m from finish, embed train badge in F marker
+  var endDistCalc=0;
+  if(r.trainEnd && pts.length>0){
+    var R3=6371000,dlat3=(r.trainEnd.stationLat-pts[pts.length-1][0])*Math.PI/180,dlng3=(r.trainEnd.stationLng-pts[pts.length-1][1])*Math.PI/180;
+    var a3=Math.sin(dlat3/2)*Math.sin(dlat3/2)+Math.cos(pts[pts.length-1][0]*Math.PI/180)*Math.cos(r.trainEnd.stationLat*Math.PI/180)*Math.sin(dlng3/2)*Math.sin(dlng3/2);
+    endDistCalc=R3*2*Math.asin(Math.sqrt(a3));
+  }
+  var finishPopup = r.trainEnd ? '<b>Finish</b><br><span style="font-size:12px">🚆 '+r.trainEnd.station+' station</span>' : '<b>Finish</b>';
+  if(r.trainEnd && endDistCalc<=150){
+    // Station IS the finish — use combined F+train marker
+    var combinedEndIcon=L.divIcon({className:'',html:'<div style="position:relative;width:26px;height:26px;border-radius:50%;background:#c0392b;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:sans-serif">F<div style="position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#1a3a7a;border-radius:4px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px">🚆</div></div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
+    result.push(L.marker(pts[pts.length-1],{icon:combinedEndIcon,zIndexOffset:200}).bindPopup(finishPopup).addTo(m));
+  } else {
+    result.push(L.marker(pts[pts.length-1],{icon:mi('#c0392b','F'),zIndexOffset:200}).bindPopup(finishPopup).addTo(m));
+    // Show separate end station marker only when it's not on top of F
+    if(r.trainEnd && endDistCalc>150){
+      var stEndIcon=L.divIcon({className:'',html:'<div style="width:28px;height:28px;border-radius:8px;background:#2d5a27;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🚆</div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
+      result.push(L.marker([r.trainEnd.stationLat,r.trainEnd.stationLng],{icon:stEndIcon,zIndexOffset:150}).bindPopup('<b>'+r.trainEnd.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.trainEnd.line+'</span><br><span style="font-size:12px">🚶 '+r.trainEnd.walkMins+' min walk from trail finish</span>').addTo(m));
+    }
   }
   
 
