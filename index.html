@@ -1267,46 +1267,66 @@ function filterPlants(type, btn) {
   drawPlants(filtered);
 }
 
-// Cache for iNaturalist photos to avoid re-fetching
-var inatPhotoCache = {};
+// Cache for species photos
+var speciesPhotoCache = {};
 
 function fetchINatPhoto(name, imgEl, creditEl) {
   if (!imgEl) return;
   var skeletonEl = imgEl.previousElementSibling;
-  if (inatPhotoCache[name]) {
-    var cached = inatPhotoCache[name];
-    if (cached.url) {
-      imgEl.src = cached.url;
-      imgEl.style.display = 'block';
-      if (skeletonEl) skeletonEl.style.display = 'none';
-      if (creditEl) creditEl.textContent = cached.credit || '';
-    } else {
-      if (skeletonEl) skeletonEl.style.display = 'none';
-    }
+
+  function showImg(url, credit) {
+    if (skeletonEl) skeletonEl.style.display = 'none';
+    imgEl.onload = function() { imgEl.style.display = 'block'; };
+    imgEl.onerror = function() { imgEl.style.display = 'none'; };
+    imgEl.src = url;
+    if (creditEl) creditEl.textContent = credit || '';
+  }
+  function hideAll() {
+    if (skeletonEl) skeletonEl.style.display = 'none';
+    imgEl.style.display = 'none';
+  }
+
+  if (speciesPhotoCache[name] !== undefined) {
+    var c = speciesPhotoCache[name];
+    if (c) showImg(c.url, c.credit); else hideAll();
     return;
   }
-  var query = encodeURIComponent(name);
-  fetch('https://api.inaturalist.org/v1/taxa/search?q=' + query + '&per_page=1&locale=en')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var result = data.results && data.results[0];
-      var photo = result && result.default_photo;
-      var url = photo && (photo.medium_url || photo.square_url);
-      var credit = photo && photo.attribution ? photo.attribution.split('(c) ').join('© ') : '';
-      if (skeletonEl) skeletonEl.style.display = 'none';
-      if (url) {
-        inatPhotoCache[name] = {url: url, credit: credit};
-        imgEl.onload = function() { imgEl.style.display = 'block'; };
-        imgEl.onerror = function() { imgEl.style.display = 'none'; };
-        imgEl.src = url;
-        if (creditEl) creditEl.textContent = credit;
-      } else {
-        inatPhotoCache[name] = {url: null};
-      }
-    })
-    .catch(function() {
-      if (skeletonEl) skeletonEl.style.display = 'none';
-    });
+
+  // Try Wikipedia REST API (CORS-enabled, no key needed)
+  var wikiName = name.replace(/ /g, '_');
+  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(wikiName), {
+    headers: {'Accept': 'application/json'}
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var thumb = data.thumbnail || data.originalimage;
+    if (thumb && thumb.source) {
+      var credit = 'Wikipedia / Wikimedia Commons';
+      speciesPhotoCache[name] = {url: thumb.source, credit: credit};
+      showImg(thumb.source, credit);
+    } else {
+      // Try with common name variations
+      var altName = name.split(' ').join('_').split('(')[0].trim();
+      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(altName), {
+        headers: {'Accept': 'application/json'}
+      })
+      .then(function(r2) { return r2.json(); })
+      .then(function(d2) {
+        var t2 = d2.thumbnail || d2.originalimage;
+        if (t2 && t2.source) {
+          speciesPhotoCache[name] = {url: t2.source, credit: 'Wikipedia / Wikimedia Commons'};
+          showImg(t2.source, 'Wikipedia / Wikimedia Commons');
+        } else {
+          speciesPhotoCache[name] = null;
+          hideAll();
+        }
+      });
+    }
+  })
+  .catch(function() {
+    speciesPhotoCache[name] = null;
+    hideAll();
+  });
 }
 
 function drawPlants(plants) {
