@@ -1023,11 +1023,13 @@ function openDetail(id){
 
   plotMain(r);
   if (pubsVisible) drawPubs(r.id);
+  var mb=document.getElementById('mapPubBtn'); if(mb){mb.style.display='flex';mb.textContent='🍺';mb.className='map-pub-btn';}
 }
 
 function closeDetail(){
   pubsVisible = false;
   clearPubs();
+  var mb2=document.getElementById('mapPubBtn'); if(mb2){mb2.style.display='none';mb2.textContent='🍺';mb2.className='map-pub-btn';}
   var b1 = document.getElementById('pubToggleDetail');
   if (b1) { b1.className = 'pub-toggle-btn'; b1.innerHTML = '🍺 Show pubs &amp; cafés on map'; }
   var dp=document.getElementById('detailPanel');
@@ -1315,7 +1317,49 @@ var PUB_DATA = {
     {lat:51.1623,lng:0.2520,name:"The Hare, Langton Green",address:"Langton Road, Langton Green TN3 0JA",website:"https://www.brunningandprice.co.uk/hare/",type:"pub",rating:"4.4★",desc:"Beautiful pub on Langton Green village with a huge garden — the classic starting point for Tunbridge Wells circular walks. Welcoming to walkers, excellent food.",google:"4.4",source:"Visit Tunbridge Wells"},
     {lat:51.1631,lng:0.2786,name:"George & Dragon, Speldhurst",address:"Speldhurst Hill, Speldhurst TN3 0NN",website:"https://www.sankeys.co.uk/gnd",type:"pub",rating:"4.5★",desc:"Award-winning 13th-century pub in Speldhurst village. Seasonal menu from local Kent farms. One of the finest country pubs in SE England — booking essential.",google:"4.5",source:"Visit Kent"},
     {lat:51.1093,lng:0.2382,name:"Crown Inn, Groombridge",address:"The Walk, Groombridge TN3 9QH",website:null,type:"pub",rating:"4.3★",desc:"Historic pub in the charming village of Groombridge, next to Groombridge Place. Real ales, good food and a lovely garden by the stream.",google:"4.3",source:"AllTrails / Google"}
+  ],
+
+  11: [ // Arundel & Amberley Circular
+    {lat:50.8577,lng:-0.5532,name:"The Black Rabbit",address:"Mill Road, Arundel BN18 9PA",website:"https://blackrabbitarundel.co.uk/",type:"pub",rating:"4.4★",desc:"A stunning riverside pub on the banks of the Arun with sweeping views of Arundel Castle. Popular with walkers — the terrace is one of the finest pub settings in Sussex. Local ales and excellent food.",google:"4.4",source:"Google"},
+    {lat:50.9086,lng:-0.5414,name:"The Bridge Inn, Amberley",address:"Houghton Bridge, Amberley BN18 9LR",website:"https://bridgeinnamberley.com/",type:"pub",rating:"4.3★",desc:"A picturesque pub right beside Amberley station with a sunny riverside terrace. Perfect mid-walk or end-of-walk stop. Known for its Harvey's ales and locally sourced food.",google:"4.3",source:"Google"},
+    {lat:50.8760,lng:-0.5200,name:"The George Inn, Burpham",address:"Burpham, Arundel BN18 9RR",website:"https://thegeorgeinnburpham.co.uk/",type:"pub",rating:"4.5★",desc:"An award-winning village pub in one of the most peaceful villages in the South Downs. No through road means it's very quiet. Exceptional food and a wonderful garden.",google:"4.5",source:"Google"}
+  ],
+  12: [ // Otford & Shoreham Circular
+    {lat:51.3125,lng:0.1976,name:"The Bull Inn, Otford",address:"High Street, Otford TN14 5PG",website:"",type:"pub",rating:"4.0★",desc:"A welcoming village pub in the heart of Otford, ideal for the start or end of the walk. Traditional pub atmosphere with real ales and a good menu.",google:"4.0",source:"Google"},
+    {lat:51.2998,lng:0.1770,name:"The Kings Arms, Shoreham",address:"Church Street, Shoreham TN14 7RX",website:"",type:"pub",rating:"4.3★",desc:"A 16th-century pub in the beautiful chalk valley village of Shoreham, right on the route. Low beams, open fire, and a lovely garden beside the River Darent.",google:"4.3",source:"Google"},
+    {lat:51.3060,lng:0.1880,name:"The Crown, Shoreham",address:"High Street, Shoreham TN14 7TD",website:"",type:"pub",rating:"4.1★",desc:"Another welcoming Shoreham pub with a relaxed atmosphere and good food. Ideal refreshment stop mid-walk as you pass through the village.",google:"4.1",source:"Google"}
+  ],
+  13: [ // Hastings to Rye
+    {lat:50.8582,lng:0.5766,name:"The Crown Inn, Hastings",address:"All Saints Street, Hastings TN34 3BJ",website:"",type:"pub",rating:"4.2★",desc:"A classic old town pub in the heart of the historic fishing quarter, right at the start of the walk. Harvey's ales and a warm welcome.",google:"4.2",source:"Google"},
+    {lat:50.8910,lng:0.6450,name:"The Royal William, Winchelsea Beach",address:"Winchelsea Beach, TN36 4LH",website:"",type:"pub",rating:"4.0★",desc:"A refreshment stop on the coastal stretch between Hastings and Rye, with sea views and a garden. Good stop for lunch mid-walk.",google:"4.0",source:"Google"},
+    {lat:50.9543,lng:0.7332,name:"The Mermaid Inn, Rye",address:"Mermaid Street, Rye TN31 7EY",website:"https://www.mermaidinn.com/",type:"pub",rating:"4.4★",desc:"One of England's most famous historic inns, dating from 1156 on the most photographed street in Rye. Atmospheric interior with original beams and inglenook fireplaces. A wonderful reward at the end of the walk.",google:"4.4",source:"Google"}
+  ],
+  14: [ // Chesham to Great Missenden
+    {lat:51.7051,lng:-0.6112,name:"The Queen's Head, Chesham",address:"Church Street, Chesham HP5 1HH",website:"",type:"pub",rating:"4.1★",desc:"A traditional town-centre pub near the station, good for pre-walk preparation. Real ales and friendly service.",google:"4.1",source:"Google"},
+    {lat:51.6878,lng:-0.5700,name:"The Latimer House Pub, Latimer",address:"Latimer, Chesham HP5 1UA",website:"",type:"pub",rating:"4.2★",desc:"A charming pub in the pretty Chess Valley village of Latimer, perfect for a mid-walk break. Lovely views over the valley.",google:"4.2",source:"Google"},
+    {lat:51.7006,lng:-0.7057,name:"The Cross Keys, Great Missenden",address:"High Street, Great Missenden HP16 0AU",website:"",type:"pub",rating:"4.3★",desc:"A welcoming pub in Roald Dahl's village, a short walk from the Roald Dahl Museum. Good food and ales make it a perfect end-of-walk destination.",google:"4.3",source:"Google"}
+  ],
+  15: [ // Henley & Hambleden Circular
+    {lat:51.5342,lng:-0.9004,name:"The Angel on the Bridge, Henley",address:"Thameside, Henley-on-Thames RG9 1BH",website:"https://www.angelonthebridge.co.uk/",type:"pub",rating:"4.3★",desc:"A beautiful riverside pub right on the Thames at Henley, with a wonderful terrace overlooking the river. Excellent food and a great starting point for the walk.",google:"4.3",source:"Google"},
+    {lat:51.5445,lng:-0.8550,name:"The Stag & Huntsman, Hambleden",address:"Hambleden, Henley-on-Thames RG9 6RP",website:"https://www.thestagandhuntsman.co.uk/",type:"pub",rating:"4.5★",desc:"A quintessential English country pub in the heart of Hambleden village, one of England's most photographed. Excellent food using local produce, beautiful garden, and a warm welcome for walkers.",google:"4.5",source:"Google"},
+    {lat:51.5320,lng:-0.8200,name:"The Flower Pot, Aston",address:"Aston, Henley-on-Thames RG9 3DG",website:"https://theflowerpotaston.co.uk/",type:"pub",rating:"4.4★",desc:"A wonderful riverside pub on the Thames towpath with one of the best beer gardens in the Chilterns. A Brakspear tied house with excellent ales.",google:"4.4",source:"Google"}
+  ],
+  16: [ // Tring & Aldbury Circular
+    {lat:51.8006,lng:-0.5970,name:"The Greyhound Inn, Aldbury",address:"Stocks Road, Aldbury HP23 5RT",website:"https://www.greyhoundaldbury.co.uk/",type:"pub",rating:"4.4★",desc:"A beautiful 15th-century inn on the village green in Aldbury, beside the famous duck pond and stocks. One of the most picturesque pub settings in the Chilterns. Harvey's and London Pride on tap.",google:"4.4",source:"Google"},
+    {lat:51.8006,lng:-0.5970,name:"The Valiant Trooper, Aldbury",address:"Trooper Road, Aldbury HP23 5RW",website:"https://www.valianttrooper.co.uk/",type:"pub",rating:"4.3★",desc:"A friendly locals' pub a short walk from Aldbury village green. Good food and real ales, popular with walkers doing the Ridgeway.",google:"4.3",source:"Google"},
+    {lat:51.7968,lng:-0.6574,name:"The Robin Hood, Tring Station",address:"Brook End, Tring HP23 6JX",website:"",type:"pub",rating:"3.9★",desc:"Convenient pub near Tring station, useful at the start or end of the walk. Simple food and a friendly atmosphere.",google:"3.9",source:"Google"}
+  ],
+  17: [ // Marlow & Hambleden Circular
+    {lat:51.5716,lng:-0.7759,name:"The Compleat Angler, Marlow",address:"Bisham Road, Marlow SL7 1RG",website:"https://www.completeangler.co.uk/",type:"pub",rating:"4.3★",desc:"A historic hotel bar and restaurant right on the Thames at Marlow, with a stunning riverside terrace. Named after Izaak Walton's 1653 book. Excellent for a pre or post-walk treat.",google:"4.3",source:"Google"},
+    {lat:51.5445,lng:-0.8550,name:"The Stag & Huntsman, Hambleden",address:"Hambleden, Henley-on-Thames RG9 6RP",website:"https://www.thestagandhuntsman.co.uk/",type:"pub",rating:"4.5★",desc:"The jewel of Hambleden village — a quintessential English country pub with excellent food, real ales, and a beautiful setting. Many walkers make this their primary destination.",google:"4.5",source:"Google"},
+    {lat:51.5600,lng:-0.7900,name:"The Hare & Hounds, Marlow",address:"Pound Lane, Marlow SL7 2AE",website:"",type:"pub",rating:"4.1★",desc:"A relaxed neighbourhood pub a short walk from Marlow town centre, popular with locals and returning walkers.",google:"4.1",source:"Google"}
+  ],
+  18: [ // Guildford to Gomshall
+    {lat:51.2490,lng:-0.5050,name:"The Percy Arms, Chilworth",address:"Dorking Road, Chilworth GU4 8NP",website:"https://www.percyarms.com/",type:"pub",rating:"4.4★",desc:"A superb dining pub in the Surrey Hills, right on the North Downs Way. Beautifully converted with excellent locally sourced food. A favourite among Surrey Hills walkers.",google:"4.4",source:"Google"},
+    {lat:51.2360,lng:-0.4720,name:"The William Bray, Shere",address:"Middle Street, Shere GU5 9HF",website:"https://www.williambrayshere.co.uk/",type:"pub",rating:"4.5★",desc:"An outstanding pub in arguably the prettiest village in Surrey, just off the route. Named after the diarist William Bray who lived in Shere for 70 years. Excellent food and a lovely garden by the Tillingbourne stream.",google:"4.5",source:"Google"},
+    {lat:51.2195,lng:-0.4415,name:"The Black Horse, Gomshall",address:"Gomshall Lane, Gomshall GU5 9LB",website:"https://www.blackhorsegomshall.co.uk/",type:"pub",rating:"4.2★",desc:"A welcoming pub right in Gomshall village, a perfect end-of-walk destination before catching the train back to London. Traditional Surrey pub with good ales and food.",google:"4.2",source:"Google"}
   ]
+
 };
 
 var pubsVisible = false;
