@@ -183,6 +183,30 @@
 
   /* Plant cards */
   .plants-disclaimer { font-size: 11px; color: #9b9b97; background: #f7f6f3; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; line-height: 1.5; }
+  .wildlife-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 12px; }
+  .wildlife-filters::-webkit-scrollbar { display: none; }
+  .wftab { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #e2e0da; background: #fafaf8; font-family: inherit; font-size: 11px; font-weight: 600; color: #6b6b67; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .wftab.wf-active { background: #1a1a18; border-color: #1a1a18; color: #fff; }
+  .wildlife-card { border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; border: 1px solid #e8e6e0; background: #fafaf8; }
+  .wildlife-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .wildlife-emoji { font-size: 18px; }
+  .wildlife-name { font-size: 13px; font-weight: 700; color: #1a1a18; flex: 1; }
+  .wildlife-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-bird      { background: #e0f0ff; color: #1a3a7a; }
+  .badge-mammal    { background: #f0ede0; color: #5a4010; }
+  .badge-butterfly { background: #fff0e8; color: #7a3800; }
+  .badge-reptile   { background: #e8f5e0; color: #2a5a10; }
+  .badge-fish      { background: #e0f8f8; color: #0a4a4a; }
+  .wildlife-season { font-size: 10px; color: #9b9b97; margin-bottom: 5px; }
+  .wildlife-desc { font-size: 12px; color: #4a4a46; line-height: 1.55; }
+  .wildlife-tip { font-size: 11px; color: #2d5a27; font-weight: 600; margin-top: 5px; }
+  /* Species photo */
+  .species-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #f0ede8; display: block; }
+  .species-img-wrap { position: relative; }
+  .species-img-credit { position: absolute; bottom: 4px; right: 6px; font-size: 9px; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.35); padding: 1px 5px; border-radius: 4px; }
+  .species-img-skeleton { width: 100%; height: 140px; border-radius: 8px; margin-bottom: 8px; background: linear-gradient(90deg, #f0ede8 25%, #e8e5e0 50%, #f0ede8 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
   .plant-card { border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; border: 1px solid; }
   .plant-card.edible     { background: #f0faf0; border-color: #c0e0c0; }
   .plant-card.medicinal  { background: #f0f4fc; border-color: #c0cce0; }
@@ -374,6 +398,18 @@
         <button class="pftab" onclick="filterPlants('protected',this)">🔒 Protected</button>
       </div>
       <div id="dPlants"></div>
+
+      <div class="section-title" style="margin-top:20px">Wildlife to look out for</div>
+      <div class="plants-disclaimer">🦅 Best seen at dawn and dusk. Keep noise low, dogs on leads near ground-nesting birds (March–September).</div>
+      <div class="wildlife-filters" id="wildlifeFilters">
+        <button class="wftab wf-active" onclick="filterWildlife('all',this)">All</button>
+        <button class="wftab" onclick="filterWildlife('bird',this)">🐦 Birds</button>
+        <button class="wftab" onclick="filterWildlife('mammal',this)">🦊 Mammals</button>
+        <button class="wftab" onclick="filterWildlife('butterfly',this)">🦋 Butterflies</button>
+        <button class="wftab" onclick="filterWildlife('reptile',this)">🦎 Reptiles</button>
+        <button class="wftab" onclick="filterWildlife('fish',this)">🐟 Fish & more</button>
+      </div>
+      <div id="dWildlife"></div>
     </div>
   </div>
 
@@ -821,6 +857,7 @@ function openDetail(id){
   document.getElementById('dPeekName').textContent=r.name;
 
   renderPlants(r.id);
+  renderWildlife(r.id);
   document.getElementById('shareTxt').textContent='📤 Share this route';
   document.getElementById('shareBtn').classList.remove('copied');
 
@@ -924,6 +961,125 @@ function plotAllPins(){
 
 
 
+
+// ── WILDLIFE DATA ─────────────────────────────────────────────────────────
+var WILDLIFE_DATA = {
+  'chalk_downland': [
+    {name:"Skylark",type:"bird",emoji:"🎵",season:"Mar–Jul",desc:"The soundtrack of the South Downs — the skylark rises almost vertically from the grass then hovers singing for minutes at a time. Its song is one of the most complex in the bird world, up to 300 different phrases. Listen for it above any open downland on a warm morning. Ground-nesting — keep dogs on leads.",tip:"Best heard: still warm mornings in April and May"},
+    {name:"Peregrine Falcon",type:"bird",emoji:"🦅",season:"Year-round",desc:"The fastest animal on earth, reaching 240mph in a stoop. Peregrines nest on the Seven Sisters cliffs and Beachy Head, hunting pigeons over the downs. Their dramatic high-speed dives are unforgettable. Look for them perching on cliff edges or soaring in pairs.",tip:"Look for: cliff ledges and soaring pairs above the cliff tops"},
+    {name:"Adonis Blue Butterfly",type:"butterfly",emoji:"🦋",season:"May–Jun, Aug–Sep",desc:"The most dazzling butterfly in Britain — males have iridescent sky-blue wings. Strictly a chalk grassland specialist, it cannot survive away from its food plant (horseshoe vetch) which only grows on short chalk turf. The South Downs is one of its last strongholds.",tip:"Look for: short chalk turf with horseshoe vetch, sunny hillsides"},
+    {name:"Chalkhill Blue Butterfly",type:"butterfly",emoji:"🦋",season:"Jul–Aug",desc:"Pale silvery-blue wings with a black border — males gather in hundreds on warm sunny slopes in July. Like the Adonis Blue, completely dependent on chalk grassland. The South Downs National Park has invested heavily in maintaining the short turf habitat these butterflies need.",tip:"Look for: warm sunny chalk slopes in July, often dozens together"},
+    {name:"Barn Owl",type:"bird",emoji:"🦉",season:"Year-round (dawn/dusk)",desc:"The ghostly white hunter of the downland margins. The South Downs has one of the highest densities of barn owls in England. They hunt at dawn and dusk, quartering low over rough grassland on silent wings. Their heart-shaped white face is unmistakeable.",tip:"Best seen: flying low over rough grass at dusk or just after dawn"},
+    {name:"Wheatear",type:"bird",emoji:"🐦",season:"Mar–Oct",desc:"One of the first summer migrants to arrive — a flash of white rump as it flies low across the cliff tops. Males are striking grey and black with an orange chest. The Seven Sisters and Seaford Head are classic spots for newly arrived wheatears in spring.",tip:"Look for: cliff tops and short turf in March and April — often very confiding"},
+    {name:"Linnet",type:"bird",emoji:"🐦",season:"Year-round",desc:"Males in summer have a crimson forehead and chest — one of the most colourful British finches. Linnets form large flocks on downland in winter, feeding on seeds of downland plants. The Sussex Wildlife Trust describes them as a key indicator species of healthy chalk grassland.",tip:"Look for: feeding in flocks on rough grassland, gorse scrub for nesting"},
+    {name:"Chalk Carpet Moth",type:"butterfly",emoji:"🦋",season:"Jun–Jul",desc:"A strikingly patterned moth found only on chalk grassland — its pale wings with dark zigzag bands are beautifully camouflaged against chalk soil. An indicator of ancient, undisturbed chalk grassland. Flies at night but rests visibly on grass stems by day.",tip:"Look for: resting on grass stems during the day on chalk slopes"},
+    {name:"Adder",type:"reptile",emoji:"🐍",season:"Mar–Oct",desc:"Britain's only venomous snake, identifiable by the distinctive dark zigzag pattern down its back. Common on the South Downs in warm weather, basking on south-facing slopes. Not aggressive — they will move away if approached slowly. Bite is very rarely fatal but seek medical help if bitten.",tip:"⚠️ Keep dogs on leads — adders will bite if trodden on"},
+    {name:"Common Blue Butterfly",type:"butterfly",emoji:"🦋",season:"May–Sep",desc:"The most widespread blue butterfly in Britain — males are bright violet-blue, females brown with blue dusting. Forms large colonies on downland wherever its food plant bird's-foot trefoil grows. Three broods a year mean you can see them all summer on the South Downs.",tip:"Look for: any rough grassland with bird's-foot trefoil, all summer"}
+  ],
+  'ancient_woodland': [
+    {name:"Red Kite",type:"bird",emoji:"🦅",season:"Year-round",desc:"One of Britain's greatest conservation success stories. <b>Reintroduced to the Chilterns between 1989–1994</b> from Spain, they now soar over every woodland walk in the area. Unmistakeable — large, rusty-red with a deeply forked tail and wingspan of nearly 2 metres. The Chilterns is the best place in England to see them.",tip:"Look up constantly — you will almost certainly see one in the Chilterns"},
+    {name:"Tawny Owl",type:"bird",emoji:"🦉",season:"Year-round (nocturnal)",desc:"The most common owl in Britain, living in ancient woodland across Surrey and Kent. The iconic 'twit-twoo' is actually a duet — the female calls 'kewick', the male replies 'hooo'. Listen for them calling at dusk from any mature woodland. Often heard near Knole Park and the Chiltern beechwoods.",tip:"Best heard: listen at dusk — the twit-twoo duet begins before dark"},
+    {name:"Hazel Dormouse",type:"mammal",emoji:"🐭",season:"Apr–Oct (hibernates)",desc:"One of Britain's rarest mammals, found in ancient woodland with mixed hazel coppice. Weighs less than a 50p coin. Almost entirely nocturnal and secretive — you're very unlikely to see one, but look for nibbled hazel nuts with a smooth round hole (their signature). Surrey is one of their last strongholds.",tip:"Look for: nibbled hazel nuts with a smooth round hole near hedgerows"},
+    {name:"Great Spotted Woodpecker",type:"bird",emoji:"🐦",season:"Year-round",desc:"The most common woodpecker — bold black and white with a crimson patch. Heard before it's seen: the drumming in spring travels 500m through woodland. Knole Park, Woldingham and the Chilterns beechwoods are excellent for woodpeckers. All three British woodpecker species occur in Surrey's ancient woodland.",tip:"Listen for: rapid drumming on dead wood in spring, 'kik' flight call"},
+    {name:"Badger",type:"mammal",emoji:"🦡",season:"Year-round (nocturnal)",desc:"Britain's largest carnivore, living in extensive underground setts in ancient woodland. Despite their size they are very shy — rarely seen in daylight. Look for their distinctive black and white striped faces, or their three-toed digging marks and latrines. The ancient woodland of the North Downs has large, long-established badger setts.",tip:"Look for: large snuffle holes, scratch marks on trees, latrines"},
+    {name:"Purple Emperor Butterfly",type:"butterfly",emoji:"🦋",season:"Jul–Aug",desc:"The king of British butterflies — males have iridescent purple wings that only show at certain angles. Lives high in the oak woodland canopy, coming down to feed on animal dung and mud puddles. Surrey's ancient woodlands are among the best places in England to see this magnificent species.",tip:"Look for: descending to paths and clearings for minerals on hot July mornings"},
+    {name:"Roe Deer",type:"mammal",emoji:"🦌",season:"Year-round",desc:"Britain's native small deer — elegant, reddish-brown in summer, grey in winter, with a white rump patch. Common in the woodland of Knole, Woldingham and the Chilterns. Roe deer are solitary unlike fallow deer. They bark loudly when disturbed — a sound often mistaken for a large dog.",tip:"Look for: woodland edges at dawn and dusk, or crossing paths"},
+    {name:"Nightingale",type:"bird",emoji:"🎵",season:"Apr–Jun",desc:"One of the most celebrated birds in English literature, with the most complex song of any British bird. Arrives from sub-Saharan Africa in April. Sings from dense scrub — you'll hear it but rarely see it. Surrey's woodland edges are among the best places to hear one. Declining rapidly in the UK.",tip:"Best heard: listen after dark in woodland edges in April and May"},
+    {name:"Sparrowhawk",type:"bird",emoji:"🦅",season:"Year-round",desc:"The ambush hunter of woodland — short rounded wings allow it to twist at speed through trees to catch small birds. Males are blue-grey with orange-barred underparts; females are much larger and brown. Common in all the woodland routes — watch for low, fast, surprise attacks along hedgerows.",tip:"Look for: low fast flight along hedges with a characteristic flap-flap-glide"},
+    {name:"Brown Hare",type:"mammal",emoji:"🐰",season:"Year-round (best Feb–Apr)",desc:"Unlike the rabbit, the brown hare lives entirely above ground — relying on speed (45mph) to escape predators. In March, females box with males to test their strength — giving rise to the phrase 'mad as a March hare'. Look in woodland clearings and field edges at dawn and dusk.",tip:"Best seen: field edges at dawn in March — watch for the famous boxing"}
+  ],
+  'thames_riverside': [
+    {name:"Kingfisher",type:"bird",emoji:"💙",season:"Year-round",desc:"The jewel of the Thames — an electric blue flash over the water is the most likely sighting. <b>Protected under the Wildlife and Countryside Act.</b> Nests in burrows dug into riverbanks. Sits motionless on low branches over water scanning for minnows, then dives. The Runnymede stretch of the Thames is excellent for kingfishers.",tip:"Look for: low branches over clear water, listen for high-pitched piping call"},
+    {name:"Grey Heron",type:"bird",emoji:"🦢",season:"Year-round",desc:"The tallest bird you'll see on the Thames — almost pterodactyl-like in flight with huge wings flapping slowly. Stands motionless for minutes in the shallows waiting for fish. Nests in heronries in tall trees from February. One of Britain's earliest nesters — eggs are laid before winter has ended.",tip:"Look for: standing motionless in shallows or on gravel bars"},
+    {name:"Red Kite",type:"bird",emoji:"🦅",season:"Year-round",desc:"Almost certainly the first bird you'll notice on the Runnymede to Windsor walk — soaring over the Thames Valley between Oxford and Windsor. The current population descends from birds reintroduced from Spain in the 1990s. Their rusty-red forked tail is unmistakeable against the sky.",tip:"Look up constantly between Runnymede and Windsor — you will see one"},
+    {name:"Otter",type:"mammal",emoji:"🦦",season:"Year-round (dawn/dusk)",desc:"Otters are gradually returning to the Thames and its Surrey tributaries after near-extinction in the 1970s. Largely nocturnal — rarely seen in daylight. Look for spraint (droppings) on riverside rocks and logs, and V-shaped ripples on still water. The River Wey near Runnymede has recorded regular sightings.",tip:"Look for: V-shaped ripples at dawn, spraint on prominent rocks"},
+    {name:"Great Crested Grebe",type:"bird",emoji:"🐦",season:"Year-round",desc:"Dramatic summer plumage of orange and black ear tufts makes this one of the Thames's most striking birds. Famous for their elaborate courtship dance in which both birds rear up breast-to-breast exchanging gifts of water weed. Common on the Thames between Runnymede and Windsor.",tip:"Look for: pairs performing courtship dances on open water in spring"},
+    {name:"Water Vole",type:"mammal",emoji:"🐭",season:"Apr–Oct",desc:"Britain's fastest-declining mammal — population fell 95% between 1990 and 2010 due to American mink predation. Fat and fluffy with a rounded nose (unlike rats which have pointed snouts). Listen for the characteristic 'plop' as they dive into water when disturbed. Look along the quiet backwaters near Runnymede.",tip:"Listen for: 'plop' of water entry — look for burrows just above water level"},
+    {name:"Little Egret",type:"bird",emoji:"🤍",season:"Year-round",desc:"Pure white heron with black legs and yellow feet — once a very rare Mediterranean visitor, now a common sight on the Thames after colonising England in the 1990s. Stands in shallows like a heron but is much smaller and more active. Groups of 20+ are now regular on the Thames in Surrey.",tip:"Look for: brilliant white, smaller than a heron, active in shallows"},
+    {name:"Swan",type:"bird",emoji:"🦢",season:"Year-round",desc:"Mute swans are deeply associated with the Thames — the Crown technically owns all unmarked mute swans on the river. The annual Swan Upping ceremony counts cygnets each July. Windsor is famous for its swan population. Males (cobs) are aggressive when nesting — give breeding pairs wide berth.",tip:"⚠️ Give nesting pairs wide berth — cobs can be aggressive in spring"},
+    {name:"Common Tern",type:"bird",emoji:"🐦",season:"Apr–Sep",desc:"Elegant seabird that breeds inland on the Thames — known as the sea swallow for its graceful flight. Hovers over water then plunge-dives for fish. Colonies breed on specially constructed rafts on the Thames. Their harsh 'kee-arr' call is the sound of the river in summer.",tip:"Look for: hovering and plunge-diving over open water April to September"},
+    {name:"Mandarin Duck",type:"bird",emoji:"🦆",season:"Year-round",desc:"Originally from China, escapees from collections have established a wild breeding population along the Thames. Males are breathtakingly beautiful — orange 'sails', purple chest, green crown. The Thames Valley now holds one of the world's largest wild populations. Windsor Great Park ponds are excellent.",tip:"Look for: ornamental ponds and wooded streams — males are unmistakeable"}
+  ],
+  'high_weald': [
+    {name:"Nightjar",type:"bird",emoji:"🌙",season:"May–Aug",desc:"One of Britain's most mysterious birds — arrives from central Africa in May and nests on open heathland and woodland clearings. Almost invisible by day (its bark-like plumage is perfect camouflage). At dusk the male churrs from a branch — an extraordinary mechanical sound that carries half a mile. The High Weald heathlands are excellent.",tip:"Best heard: listen at dusk in June and July on open heathland — churring carries far"},
+    {name:"Fallow Deer",type:"mammal",emoji:"🦌",season:"Year-round",desc:"The classic deer of the Wealden estates — medium-sized with a distinctive spotted coat in summer and broad palmated antlers in males. Knole Park holds one of Britain's finest herds, descended from deer brought by the Normans in the 11th century. The rut in October is spectacular.",tip:"Best seen: Knole Park year-round. Rut in October is unforgettable"},
+    {name:"Heath Fritillary Butterfly",type:"butterfly",emoji:"🦋",season:"Jun–Jul",desc:"One of Britain's rarest butterflies, restricted to a handful of sites including the Wealden woods of Kent and Sussex. An orange-brown chequered pattern on its wings. Relies on recently coppiced woodland where its food plant (common cow-wheat) grows. The Blean Woods near Canterbury is its main stronghold.",tip:"Look for: coppiced woodland clearings in June — rare, treat any sighting as special"},
+    {name:"Woodcock",type:"bird",emoji:"🐦",season:"Year-round",desc:"The ultimate camouflaged bird — its fallen-leaf pattern makes it virtually invisible on the woodland floor. Flushes explosively when almost trodden on. Males perform 'roding' flights at dusk in spring — flying the same circuit over woodland emitting grunting and squeaking calls. Ancient Wealden woodland is prime woodcock habitat.",tip:"Look for: roding flight at dusk in spring — listen for the 'tsiwick' call"},
+    {name:"Dormouse",type:"mammal",emoji:"🐭",season:"Apr–Oct (hibernates Oct–Apr)",desc:"The High Weald's ancient hazel coppice is perfect dormouse habitat — they spend their lives in the canopy of hazel, honeysuckle and bramble. Hibernates from October to April, curled in a ball. Strictly nocturnal — you're very unlikely to see one, but the nibbled hazel nuts are a giveaway.",tip:"Look for: hazelnuts with a smooth round hole and tooth marks around the edge"},
+    {name:"Spotted Flycatcher",type:"bird",emoji:"🐦",season:"May–Sep",desc:"A long-distance migrant from sub-Saharan Africa arriving in May. Sits on exposed perches then makes aerial sallies to catch flying insects — one of the most watchable of all woodland birds. Declining seriously in the UK. The ancient woodland and garden edges of the High Weald are among its last strongholds.",tip:"Look for: exposed perches in woodland clearings — watch for the characteristic sallies"},
+    {name:"Adder",type:"reptile",emoji:"🐍",season:"Mar–Oct",desc:"Britain's only venomous snake basks on warm sunny heath and woodland edges. The distinctive dark zigzag marking along its back makes it identifiable. Common across the High Weald heathlands — be alert on warm spring and autumn days. Shy and will retreat if given warning.",tip:"⚠️ Keep dogs on leads in warm weather — adders will bite if trodden on"},
+    {name:"Sparrowhawk",type:"bird",emoji:"🦅",season:"Year-round",desc:"The woodland ambush hunter — short wings adapted for high-speed twisting flight through trees. Females are larger than males, which is unusual in birds of prey. The ancient Wealden woodland provides perfect habitat, with high small-bird populations to hunt.",tip:"Look for: low fast flight along hedges — flap-flap-glide flight pattern"},
+    {name:"Great Spotted Woodpecker",type:"bird",emoji:"🐦",season:"Year-round",desc:"The drumming of the great spotted woodpecker is the defining sound of Wealden woodland in spring. All three British woodpeckers occur in the High Weald — the green woodpecker (laughing yaffle call) feeds on ants in clearings, the lesser spotted is tiny and elusive in high canopy.",tip:"Listen for: rapid drumming March–May, high kik call in flight year-round"},
+    {name:"Purple Hairstreak Butterfly",type:"butterfly",emoji:"🦋",season:"Jul–Aug",desc:"Lives almost entirely in the canopy of oak trees — you're most likely to see it as small purplish flickers in the treetops on sunny afternoons. Comes down to ground level only rarely. The ancient Wealden oaks support one of the best populations in SE England. Look up on warm afternoons in late July.",tip:"Look up into oak canopy on warm sunny afternoons in July and August"}
+  ]
+};
+
+var ROUTE_WILDLIFE = {
+  1: 'chalk_downland',
+  2: 'ancient_woodland',
+  3: 'ancient_woodland',
+  4: 'ancient_woodland',
+  5: 'thames_riverside',
+  6: 'ancient_woodland',
+  7: 'ancient_woodland',
+  8: 'ancient_woodland',
+  9: 'chalk_downland',
+  10: 'high_weald'
+};
+
+var currentWildlife = [];
+
+function renderWildlife(routeId) {
+  var set = ROUTE_WILDLIFE[routeId];
+  currentWildlife = set ? WILDLIFE_DATA[set] : [];
+  document.querySelectorAll('.wftab').forEach(function(t){ t.className='wftab'; });
+  var all = document.querySelector('.wftab');
+  if(all) all.className='wftab wf-active';
+  drawWildlife(currentWildlife);
+}
+
+function filterWildlife(type, btn) {
+  document.querySelectorAll('.wftab').forEach(function(t){ t.className='wftab'; });
+  if(btn) btn.className='wftab wf-active';
+  var filtered = type==='all' ? currentWildlife : currentWildlife.filter(function(w){ return w.type===type; });
+  drawWildlife(filtered);
+}
+
+function drawWildlife(animals) {
+  var el = document.getElementById('dWildlife');
+  if (!el) return;
+  if (!animals || !animals.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#9b9b97;font-size:13px">No species of this type recorded on this route.</div>';
+    return;
+  }
+  var badgeLabel = {bird:'🐦 Bird', mammal:'🦊 Mammal', butterfly:'🦋 Butterfly/Moth', reptile:'🦎 Reptile', fish:'🐟 Fish & more'};
+  var badgeClass = {bird:'badge-bird', mammal:'badge-mammal', butterfly:'badge-butterfly', reptile:'badge-reptile', fish:'badge-fish'};
+  el.innerHTML = animals.map(function(w,i) {
+    var tip = w.tip ? '<div class="wildlife-tip">👁 '+w.tip+'</div>' : '';
+    return '<div class="wildlife-card">' +
+      '<div class="species-img-wrap" id="wimgwrap-'+i+'">' +
+        '<div class="species-img-skeleton" id="wskel-'+i+'"></div>' +
+        '<img class="species-img" id="wimg-'+i+'" style="display:none" />' +
+        '<span class="species-img-credit" id="wcredit-'+i+'"></span>' +
+      '</div>' +
+      '<div class="wildlife-card-top">' +
+        '<span class="wildlife-emoji">'+w.emoji+'</span>' +
+        '<span class="wildlife-name">'+w.name+'</span>' +
+        '<span class="wildlife-badge '+(badgeClass[w.type]||'badge-bird')+'">'+badgeLabel[w.type]+'</span>' +
+      '</div>' +
+      '<div class="wildlife-season">📅 '+w.season+'</div>' +
+      '<div class="wildlife-desc">'+w.desc+'</div>' +
+      tip +
+    '</div>';
+  }).join('');
+  // Fetch photos after rendering
+  animals.forEach(function(w,i){
+    var img = document.getElementById('wimg-'+i);
+    var credit = document.getElementById('wcredit-'+i);
+    if(img) fetchINatPhoto(w.name, img, credit);
+  });
+}
+
 // ── PUB & CAFE DATA ────────────────────────────────────────────────────────
 var PUB_DATA = {
   1: [ // Seven Sisters & Friston Forest
@@ -941,10 +1097,10 @@ var PUB_DATA = {
     {lat:50.9085,lng:-0.5320,name:"The Black Horse",type:"pub",rating:"4.4★",desc:"Superb food in the heart of Amberley village with a stunning raised garden. Locally sourced seasonal food, excellent wine list.",google:"4.4",source:"Google"},
     {lat:50.9085,lng:-0.5320,name:"Amberley Tea Rooms",type:"cafe",rating:"4.3★",desc:"Excellent reputation for cream teas and light lunches in the heart of Amberley village. Perfect end to a walk.",google:"4.3",source:"Google"}
   ],
-  4: [ // Chiltern Link
-    {lat:51.7056,lng:-0.6112,name:"The Queen's Head",type:"pub",rating:"4.2★",desc:"Well-placed for exploring historic Church Street and the Chesham Old Town. Traditional local pub with real fires and a welcoming atmosphere.",google:"4.2",source:"Google"},
-    {lat:51.7583,lng:-0.7120,name:"The Bedford Arms",type:"pub",rating:"4.3★",desc:"Handily placed along the Chess Valley walk at Chenies. Popular walkers' stop with good food and a lovely position by the river.",google:"4.3",source:"Google"},
-    {lat:51.7312,lng:-0.7020,name:"Cock & Rabbit at The Lee",type:"pub",rating:"4.4★",desc:"Beside a picturesque village green shaped by Arthur Liberty, founder of Liberty of London. Excellent food, real fires, quintessential Chilterns pub.",google:"4.4",source:"Google"}
+  4: [ // Chiltern Link — pubs directly on or beside the route
+    {lat:51.7053,lng:-0.6109,name:"The Queen's Head",type:"pub",rating:"4.2★",desc:"Right in Chesham town centre, 2 minutes from the station — perfect for a pre-walk pint or coffee. Traditional local with real fires, exploring historic Church Street.",google:"4.2",source:"Google"},
+    {lat:51.7290,lng:-0.6832,name:"The Golden Eagle, Ashley Green",type:"pub",rating:"4.4★",desc:"Sits directly on the Chiltern Heritage Trail at the halfway point of the walk. Authentic olde-worlde pub in the heart of Ashley Green village, dog-friendly with a new outdoor smokehouse and heated garden. Described as the perfect walkers stop on this exact route.",google:"4.4",source:"Chilterns National Landscape / chilterns.org.uk"},
+    {lat:51.7622,lng:-0.5638,name:"The Kings Arms, Berkhamsted",type:"pub",rating:"4.3★",desc:"Right by Berkhamsted station at the finish of the walk. Described as the go-to walkers pub for Chiltern routes finishing in Berkhamsted. Grand Union Canal and Berkhamsted Castle both within walking distance.",google:"4.3",source:"kingsarmsberkhamsted.co.uk"}
   ],
   5: [ // Runnymede to Windsor
     {lat:51.4419,lng:-0.5519,name:"The Bells of Ouzeley",type:"pub",rating:"4.2★",desc:"Riverside pub in Old Windsor — an idyllic Thames-side stop. Charming setting by the water, classic pub food and a good beer garden.",google:"4.2",source:"Google"},
@@ -1111,6 +1267,48 @@ function filterPlants(type, btn) {
   drawPlants(filtered);
 }
 
+// Cache for iNaturalist photos to avoid re-fetching
+var inatPhotoCache = {};
+
+function fetchINatPhoto(name, imgEl, creditEl) {
+  if (!imgEl) return;
+  var skeletonEl = imgEl.previousElementSibling;
+  if (inatPhotoCache[name]) {
+    var cached = inatPhotoCache[name];
+    if (cached.url) {
+      imgEl.src = cached.url;
+      imgEl.style.display = 'block';
+      if (skeletonEl) skeletonEl.style.display = 'none';
+      if (creditEl) creditEl.textContent = cached.credit || '';
+    } else {
+      if (skeletonEl) skeletonEl.style.display = 'none';
+    }
+    return;
+  }
+  var query = encodeURIComponent(name);
+  fetch('https://api.inaturalist.org/v1/taxa/search?q=' + query + '&per_page=1&locale=en')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var result = data.results && data.results[0];
+      var photo = result && result.default_photo;
+      var url = photo && (photo.medium_url || photo.square_url);
+      var credit = photo && photo.attribution ? photo.attribution.split('(c) ').join('© ') : '';
+      if (skeletonEl) skeletonEl.style.display = 'none';
+      if (url) {
+        inatPhotoCache[name] = {url: url, credit: credit};
+        imgEl.onload = function() { imgEl.style.display = 'block'; };
+        imgEl.onerror = function() { imgEl.style.display = 'none'; };
+        imgEl.src = url;
+        if (creditEl) creditEl.textContent = credit;
+      } else {
+        inatPhotoCache[name] = {url: null};
+      }
+    })
+    .catch(function() {
+      if (skeletonEl) skeletonEl.style.display = 'none';
+    });
+}
+
 function drawPlants(plants) {
   var el = document.getElementById('dPlants');
   if (!el) return;
@@ -1126,9 +1324,14 @@ function drawPlants(plants) {
   plants = plants.slice().sort(function(a,b){
     return (typeOrder[a.type]||99) - (typeOrder[b.type]||99);
   });
-  el.innerHTML = plants.map(function(p) {
+  el.innerHTML = plants.map(function(p,i) {
     var warning = p.warning ? '<div class="plant-warning">'+p.warning+'</div>' : '';
     return '<div class="plant-card '+(cardClass[p.type]||'edible')+'">' +
+      '<div class="species-img-wrap" id="pimgwrap-'+i+'">' +
+        '<div class="species-img-skeleton" id="pskel-'+i+'"></div>' +
+        '<img class="species-img" id="pimg-'+i+'" style="display:none" />' +
+        '<span class="species-img-credit" id="pcredit-'+i+'"></span>' +
+      '</div>' +
       '<div class="plant-card-top">' +
         '<span class="plant-emoji">'+p.emoji+'</span>' +
         '<span class="plant-name">'+p.name+'</span>' +
@@ -1139,6 +1342,12 @@ function drawPlants(plants) {
       warning +
     '</div>';
   }).join('');
+  // Fetch photos after rendering
+  plants.forEach(function(p,i){
+    var img = document.getElementById('pimg-'+i);
+    var credit = document.getElementById('pcredit-'+i);
+    if(img) fetchINatPhoto(p.name, img, credit);
+  });
 }
 
 function shareRoute(){
