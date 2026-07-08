@@ -1271,6 +1271,66 @@ function filterPlants(type, btn) {
 var speciesPhotoCache = {};
 
 // Override Wikipedia article titles for species where common name doesn't match
+// Direct Wikimedia Commons image URLs for species where Wikipedia lead image is wrong
+var DIRECT_IMAGES = {
+  // Plants - direct Wikimedia Commons high quality photos
+  'Pignut': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Conopodium_majus_3.jpg/400px-Conopodium_majus_3.jpg',
+  'Arum (Lords & Ladies)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Arum_maculatum_-_berries.jpg/400px-Arum_maculatum_-_berries.jpg',
+  'Lords & Ladies': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Arum_maculatum_-_berries.jpg/400px-Arum_maculatum_-_berries.jpg',
+  'Chalk Carpet Moth': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Scotopteryx_bipunctaria01.jpg/400px-Scotopteryx_bipunctaria01.jpg',
+  'Wild Service Tree': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Sorbus_torminalis_fruits.jpg/400px-Sorbus_torminalis_fruits.jpg',
+  'Cleavers (Goosegrass)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Galium_aparine_close.jpg/400px-Galium_aparine_close.jpg',
+  'Ground Elder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Aegopodium_podagraria1_ies.jpg/400px-Aegopodium_podagraria1_ies.jpg',
+  'Sea Beet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Beta_vulgaris_subsp._maritima_kz1.jpg/400px-Beta_vulgaris_subsp._maritima_kz1.jpg',
+  'Reed': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Phragmites_australis_Schilfrohr.jpg/400px-Phragmites_australis_Schilfrohr.jpg',
+  'Water Mint': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mentha_aquatica_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-098.jpg/400px-Mentha_aquatica_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-098.jpg',
+  'Watercress': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Watercress_on_sale.jpg/400px-Watercress_on_sale.jpg',
+  'Hemlock Water Dropwort': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Oenanthe_crocata_1.jpg/400px-Oenanthe_crocata_1.jpg',
+  'Wild Garlic (Ramsons)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Allium_ursinum_with_bee.jpg/400px-Allium_ursinum_with_bee.jpg',
+  'Elder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Sambucus_nigra_-_berries.jpg/400px-Sambucus_nigra_-_berries.jpg',
+  'Hawthorn': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Hawthorn_Berries.jpg/400px-Hawthorn_Berries.jpg',
+  'Blackberry': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Wild_Blackberry_on_Seedling.jpg/400px-Wild_Blackberry_on_Seedling.jpg',
+  'Stinging Nettle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Brennnessel_fg01.jpg/400px-Brennnessel_fg01.jpg',
+  'Yarrow': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Achillea_millefolium_W.jpg/400px-Achillea_millefolium_W.jpg',
+  'Meadowsweet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Filipendula_ulmaria_Echtes_Maedesuess.jpg/400px-Filipendula_ulmaria_Echtes_Maedesuess.jpg',
+  'Foxglove': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Digitalis_purpurea_Luc_Viatour.jpg/400px-Digitalis_purpurea_Luc_Viatour.jpg',
+  'Deadly Nightshade': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Atropa_belladonna_-_berries_and_flowers.jpg/400px-Atropa_belladonna_-_berries_and_flowers.jpg',
+  'Wild Thyme': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Thymus_serpyllum_-_Breckland_thyme.jpg/400px-Thymus_serpyllum_-_Breckland_thyme.jpg',
+  'Salad Burnet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Sanguisorba_minor.jpg/400px-Sanguisorba_minor.jpg',
+  'Rock Samphire': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Crithmum_maritimum_flowers.jpg/400px-Crithmum_maritimum_flowers.jpg',
+  'Wild Marjoram': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Origanum_vulgare_-_harilik_pune.jpg/400px-Origanum_vulgare_-_harilik_pune.jpg',
+  'Sea Beet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Beta_vulgaris_subsp._maritima_kz1.jpg/400px-Beta_vulgaris_subsp._maritima_kz1.jpg',
+  'Beech Nut': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Fagus_sylvatica_autumn.jpg/400px-Fagus_sylvatica_autumn.jpg',
+  'Hazel': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Corylus_avellana_fruits.jpg/400px-Corylus_avellana_fruits.jpg',
+  'Sweet Chestnut': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Castanea_sativa_Mill.jpg/400px-Castanea_sativa_Mill.jpg',
+  'Rowan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Sorbus_aucuparia_berries.jpg/400px-Sorbus_aucuparia_berries.jpg',
+  'Crab Apple': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Malus_sylvestris_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-091.jpg/400px-Malus_sylvestris_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-091.jpg',
+  'Blackthorn (Sloe)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Prunussp.jpg/400px-Prunussp.jpg',
+  'Honeysuckle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Lonicera_periclymenum0.jpg/400px-Lonicera_periclymenum0.jpg',
+  'Guelder Rose': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Viburnum_opulus_fruits.jpg/400px-Viburnum_opulus_fruits.jpg',
+  'Wild Hops': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Humulus_lupulus_-_hops_close_up.jpg/400px-Humulus_lupulus_-_hops_close_up.jpg',
+  'Burdock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Arctium_lappa_flowers_2.jpg/400px-Arctium_lappa_flowers_2.jpg',
+  // Wildlife - direct high quality photos
+  'Red Kite': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/sixty/Red_kite_uk.jpg/400px-Red_kite_uk.jpg',
+  'Skylark': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Alauda_arvensis_01.jpg/400px-Alauda_arvensis_01.jpg',
+  'Barn Owl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Tyto_alba_-_Ranh%C3%A4nkijaka_2.jpg/400px-Tyto_alba_-_Ranh%C3%A4nkijaka_2.jpg',
+  'Adder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Adder_-_Vipera_berus.jpg/400px-Adder_-_Vipera_berus.jpg',
+  'Peregrine Falcon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Falco_peregrinus_nest_removing_prey.jpg/400px-Falco_peregrinus_nest_removing_prey.jpg',
+  'Hazel Dormouse': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Muscardinus_avellanarius.jpg/400px-Muscardinus_avellanarius.jpg',
+  'Badger': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Badger-badger.jpg/400px-Badger-badger.jpg',
+  'Roe Deer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Roe_Deer_portrait.jpg/400px-Roe_Deer_portrait.jpg',
+  'Fallow Deer': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Fallow_deer_buck.jpg/400px-Fallow_deer_buck.jpg',
+  'Nightjar': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Nightjar_edit.jpg/400px-Nightjar_edit.jpg',
+  'Water Vole': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Water_vole.jpg/400px-Water_vole.jpg',
+  'Otter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/European_Otter.jpg/400px-European_Otter.jpg',
+  'Mandarin Duck': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Mandarinente_Aix_galericulata.jpg/400px-Mandarinente_Aix_galericulata.jpg',
+  'Brown Hare': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Lepus_europaeus_crop.jpg/400px-Lepus_europaeus_crop.jpg',
+  'Tawny Owl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Strix_aluco_Wildlife_Photographer.jpg/400px-Strix_aluco_Wildlife_Photographer.jpg',
+  'Nightingale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Luscinia_megarhynchos_Nicosia.jpg/400px-Luscinia_megarhynchos_Nicosia.jpg',
+  'Woodcock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Eurasian_woodcock.jpg/400px-Eurasian_woodcock.jpg',
+  'Spotted Flycatcher': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Muscicapa_striata.jpg/400px-Muscicapa_striata.jpg'
+};
+
 var WIKI_OVERRIDES = {
   'Wild Garlic (Ramsons)': 'Allium_ursinum',
   'Wild Thyme': 'Thymus_serpyllum',
@@ -1278,12 +1338,12 @@ var WIKI_OVERRIDES = {
   'Elder': 'Sambucus_nigra',
   'Wild Marjoram': 'Origanum_vulgare',
   'Rock Samphire': 'Rock_samphire',
-  'Sea Beet': 'Beta_vulgaris_subsp._maritima',
+  'Sea Beet': 'Beta_vulgaris',
   'Pyramidal Orchid': 'Pyramidal_orchid',
   'Deadly Nightshade': 'Atropa_belladonna',
   'Chalk Carpet Moth': 'Scotopteryx_bipunctaria',
   'Burdock': 'Arctium_lappa',
-  'Ground Elder': 'Aegopodium_podagraria',
+  'Ground Elder': 'Ground_elder',
   'Lords & Ladies': 'Arum_maculatum',
   'Beech Nut': 'Fagus_sylvatica',
   'Wood Sorrel': 'Oxalis_acetosella',
@@ -1296,11 +1356,11 @@ var WIKI_OVERRIDES = {
   'Water Mint': 'Mentha_aquatica',
   'Blackthorn (Sloe)': 'Prunus_spinosa',
   'Wild Hops': 'Humulus_lupulus',
-  'Cleavers (Goosegrass)': 'Galium_aparine',
+  'Cleavers (Goosegrass)': 'Cleavers',
   'Guelder Rose': 'Viburnum_opulus',
   'Reed': 'Phragmites_australis',
   'Sweet Chestnut': 'Castanea_sativa',
-  'Wild Service Tree': 'Sorbus_torminalis',
+  'Wild Service Tree': 'Wild_service_tree',
   'Hawthorn': 'Crataegus_monogyna',
   'Herb Robert': 'Geranium_robertianum',
   'Sweet Cicely': 'Myrrhis_odorata',
@@ -1309,6 +1369,7 @@ var WIKI_OVERRIDES = {
   'Honeysuckle': 'Lonicera_periclymenum',
   'Pignut': 'Conopodium_majus',
   'Rowan': 'Sorbus_aucuparia',
+  'Yew': 'Taxus_baccata',
   'Yarrow': 'Achillea_millefolium',
   'Blackberry': 'Rubus_fruticosus',
   'Red Kite': 'Red_kite',
@@ -1354,6 +1415,16 @@ function fetchINatPhoto(name, imgEl, creditEl) {
   if (!imgEl) return;
   var skeletonEl = imgEl.previousElementSibling;
 
+  // Check for direct image URL first
+  if (DIRECT_IMAGES[name]) {
+    if (skeletonEl) skeletonEl.style.display = 'none';
+    imgEl.onload = function() { imgEl.style.display = 'block'; };
+    imgEl.onerror = function() { imgEl.style.display = 'none'; };
+    imgEl.src = DIRECT_IMAGES[name];
+    if (creditEl) creditEl.textContent = '© Wikimedia Commons';
+    return;
+  }
+
   function showImg(url, credit) {
     if (skeletonEl) skeletonEl.style.display = 'none';
     imgEl.onload = function() { imgEl.style.display = 'block'; };
@@ -1382,7 +1453,16 @@ function fetchINatPhoto(name, imgEl, creditEl) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var thumb = data.thumbnail || data.originalimage;
-      if (thumb && thumb.source) {
+      // Skip SVG files, diagrams and maps (usually not photos)
+      var badImg = thumb && thumb.source && (
+        thumb.source.indexOf('.svg') > -1 ||
+        thumb.source.indexOf('Taxon') > -1 ||
+        thumb.source.indexOf('cladogram') > -1 ||
+        thumb.source.indexOf('diagram') > -1 ||
+        thumb.source.indexOf('map') > -1 ||
+        thumb.source.indexOf('Map') > -1
+      );
+      if (thumb && thumb.source && !badImg) {
         speciesPhotoCache[name] = {url: thumb.source, credit: '© Wikimedia Commons'};
         showImg(thumb.source, '© Wikimedia Commons');
       } else if (fallback) {
