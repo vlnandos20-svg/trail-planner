@@ -498,7 +498,7 @@ var ROUTES = [
     region:"Amberley, West Sussex",
     difficulty:"easy", miles:"4.5", elevationM:"95", hours:"2–2.5",
     transport:"train",
-    train:{station:"Amberley", stationLat:50.9091, stationLng:-0.5414, line:"Southern · London Victoria", walkMins:5},
+    train:{station:"Amberley", stationLat:50.9091, stationLng:-0.5414, line:"Southern · London Victoria", walkMins:18},
     bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
     description:"A lovely short circular walk from Amberley station taking in the chalk downland, the picturesque village of Amberley with its thatched cottages and Norman church, and sweeping views over the Arun valley and Wild Brooks.",
     highlights:["Amberley village","Norman church","Chalk downland","Arun valley views","Amberley Wild Brooks"],
@@ -530,13 +530,13 @@ var ROUTES = [
   {
     id:4, name:"Chiltern Link",
     aonb:"chilterns", aonbLabel:"Chilterns AONB",
-    region:"Chesham to Berkhamsted, Hertfordshire",
+    region:"Wendover to Chesham, Buckinghamshire",
     difficulty:"moderate", miles:"6.5", elevationM:"175", hours:"3–3.5",
     transport:"train",
-    train:{station:"Chesham", stationLat:51.7051, stationLng:-0.6112, line:"London Underground · Metropolitan line", walkMins:5},
-    trainEnd:{station:"Berkhamsted", stationLat:51.7622, stationLng:-0.5638, line:"Chiltern Railways · London Marylebone", walkMins:5},
+    train:{station:"Wendover", stationLat:51.7627, stationLng:-0.7430, line:"Chiltern Railways · London Marylebone", walkMins:2},
+    trainEnd:{station:"Chesham", stationLat:51.7051, stationLng:-0.6112, line:"London Underground · Metropolitan line", walkMins:2},
     bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
-    description:"A scenic walk through the heart of the Chilterns AONB linking the Chess Valley to Berkhamsted. Ancient beech woodland, rolling chalk downland and classic English village scenery make this one of the most rewarding walks accessible directly from the London Underground.",
+    description:"A scenic walk through the heart of the Chilterns AONB from Wendover to Chesham, linking the Chess Valley through ancient beech woodland and chalk downland. Ancient beech woodland, rolling chalk downland and classic English village scenery make this one of the most rewarding walks accessible directly from the London Underground.",
     highlights:["Chess Valley","Ancient beech woodland","Chiltern hills views","Charming villages","London Underground access"],
     tags:["Train direct","Woodland","Chilterns","AONB","London accessible"],
     highlightMarkers:[
@@ -568,7 +568,7 @@ var ROUTES = [
     region:"Runnymede, Surrey",
     difficulty:"moderate", miles:"5.9", elevationM:"65", hours:"2.5–3",
     transport:"train",
-    train:{station:"Egham", stationLat:51.4293, stationLng:-0.5465, line:"South Western · London Waterloo", walkMins:15},
+    train:{station:"Egham", stationLat:51.4293, stationLng:-0.5465, line:"South Western · London Waterloo", walkMins:18},
     trainEnd:{station:"Windsor & Eton Riverside", stationLat:51.4847, stationLng:-0.6082, line:"South Western · London Waterloo", walkMins:5},
     bus:null, isNationalRail:false, gpxSource:"gps-routes.co.uk",
     description:"A beautiful walk from the historic meadows of Runnymede — where Magna Carta was sealed in 1215 — along the Thames towpath to the ancient town of Windsor with its magnificent royal castle. One of England's most historically significant walks.",
@@ -1100,7 +1100,7 @@ var PUB_DATA = {
   4: [ // Chiltern Link — pubs directly on or beside the route
     {lat:51.7053,lng:-0.6109,name:"The Queen's Head",type:"pub",rating:"4.2★",desc:"Right in Chesham town centre, 2 minutes from the station — perfect for a pre-walk pint or coffee. Traditional local with real fires, exploring historic Church Street.",google:"4.2",source:"Google"},
     {lat:51.7290,lng:-0.6832,name:"The Golden Eagle, Ashley Green",type:"pub",rating:"4.4★",desc:"Sits directly on the Chiltern Heritage Trail at the halfway point of the walk. Authentic olde-worlde pub in the heart of Ashley Green village, dog-friendly with a new outdoor smokehouse and heated garden. Described as the perfect walkers stop on this exact route.",google:"4.4",source:"Chilterns National Landscape / chilterns.org.uk"},
-    {lat:51.7622,lng:-0.5638,name:"The Kings Arms, Berkhamsted",type:"pub",rating:"4.3★",desc:"Right by Berkhamsted station at the finish of the walk. Described as the go-to walkers pub for Chiltern routes finishing in Berkhamsted. Grand Union Canal and Berkhamsted Castle both within walking distance.",google:"4.3",source:"kingsarmsberkhamsted.co.uk"}
+    {lat:51.7051,lng:-0.6112,name:"The Queen's Head, Chesham",type:"pub",rating:"4.2★",desc:"Right in Chesham town centre 2 minutes from the station — perfect finish to the walk. Traditional local with real fires on historic Church Street.",google:"4.2",source:"Google"}
   ],
   5: [ // Runnymede to Windsor
     {lat:51.4419,lng:-0.5519,name:"The Bells of Ouzeley",type:"pub",rating:"4.2★",desc:"Riverside pub in Old Windsor — an idyllic Thames-side stop. Charming setting by the water, classic pub food and a good beer garden.",google:"4.2",source:"Google"},
@@ -1270,6 +1270,86 @@ function filterPlants(type, btn) {
 // Cache for species photos
 var speciesPhotoCache = {};
 
+// Override Wikipedia article titles for species where common name doesn't match
+var WIKI_OVERRIDES = {
+  'Wild Garlic (Ramsons)': 'Allium_ursinum',
+  'Wild Thyme': 'Thymus_serpyllum',
+  'Salad Burnet': 'Salad_burnet',
+  'Elder': 'Sambucus_nigra',
+  'Wild Marjoram': 'Origanum_vulgare',
+  'Rock Samphire': 'Rock_samphire',
+  'Sea Beet': 'Beta_vulgaris_subsp._maritima',
+  'Pyramidal Orchid': 'Pyramidal_orchid',
+  'Deadly Nightshade': 'Atropa_belladonna',
+  'Chalk Carpet Moth': 'Scotopteryx_bipunctaria',
+  'Burdock': 'Arctium_lappa',
+  'Ground Elder': 'Aegopodium_podagraria',
+  'Lords & Ladies': 'Arum_maculatum',
+  'Beech Nut': 'Fagus_sylvatica',
+  'Wood Sorrel': 'Oxalis_acetosella',
+  'Stinging Nettle': 'Urtica_dioica',
+  'Hazel': 'Corylus_avellana',
+  'Foxglove': 'Digitalis_purpurea',
+  'Hemlock Water Dropwort': 'Oenanthe_crocata',
+  'Watercress': 'Nasturtium_officinale',
+  'Meadowsweet': 'Filipendula_ulmaria',
+  'Water Mint': 'Mentha_aquatica',
+  'Blackthorn (Sloe)': 'Prunus_spinosa',
+  'Wild Hops': 'Humulus_lupulus',
+  'Cleavers (Goosegrass)': 'Galium_aparine',
+  'Guelder Rose': 'Viburnum_opulus',
+  'Reed': 'Phragmites_australis',
+  'Sweet Chestnut': 'Castanea_sativa',
+  'Wild Service Tree': 'Sorbus_torminalis',
+  'Hawthorn': 'Crataegus_monogyna',
+  'Herb Robert': 'Geranium_robertianum',
+  'Sweet Cicely': 'Myrrhis_odorata',
+  'Crab Apple': 'Malus_sylvestris',
+  'Arum (Lords & Ladies)': 'Arum_maculatum',
+  'Honeysuckle': 'Lonicera_periclymenum',
+  'Pignut': 'Conopodium_majus',
+  'Rowan': 'Sorbus_aucuparia',
+  'Yarrow': 'Achillea_millefolium',
+  'Blackberry': 'Rubus_fruticosus',
+  'Red Kite': 'Red_kite',
+  'Tawny Owl': 'Tawny_owl',
+  'Hazel Dormouse': 'Hazel_dormouse',
+  'Great Spotted Woodpecker': 'Great_spotted_woodpecker',
+  'Brown Hare': 'European_hare',
+  'Purple Emperor Butterfly': 'Apatura_iris',
+  'Roe Deer': 'Roe_deer',
+  'Nightingale': 'Common_nightingale',
+  'Sparrowhawk': 'Eurasian_sparrowhawk',
+  'Adonis Blue Butterfly': 'Adonis_blue',
+  'Chalkhill Blue Butterfly': 'Chalkhill_blue',
+  'Barn Owl': 'Barn_owl',
+  'Wheatear': 'Northern_wheatear',
+  'Adder': 'Vipera_berus',
+  'Common Blue Butterfly': 'Common_blue',
+  'Chalk Carpet Moth': 'Scotopteryx_bipunctaria',
+  'Peregrine Falcon': 'Peregrine_falcon',
+  'Skylark': 'Eurasian_skylark',
+  'Linnet': 'Common_linnet',
+  'Kingfisher': 'Common_kingfisher',
+  'Grey Heron': 'Grey_heron',
+  'Otter': 'European_otter',
+  'Great Crested Grebe': 'Great_crested_grebe',
+  'Water Vole': 'European_water_vole',
+  'Little Egret': 'Little_egret',
+  'Common Tern': 'Common_tern',
+  'Mandarin Duck': 'Mandarin_duck',
+  'Swan': 'Mute_swan',
+  'Nightjar': 'European_nightjar',
+  'Fallow Deer': 'Fallow_deer',
+  'Heath Fritillary Butterfly': 'Heath_fritillary',
+  'Woodcock': 'Eurasian_woodcock',
+  'Dormouse': 'Hazel_dormouse',
+  'Spotted Flycatcher': 'Spotted_flycatcher',
+  'Great Spotted Woodpecker': 'Great_spotted_woodpecker',
+  'Purple Hairstreak Butterfly': 'Purple_hairstreak',
+  'Badger': 'European_badger'
+};
+
 function fetchINatPhoto(name, imgEl, creditEl) {
   if (!imgEl) return;
   var skeletonEl = imgEl.previousElementSibling;
@@ -1292,41 +1372,35 @@ function fetchINatPhoto(name, imgEl, creditEl) {
     return;
   }
 
-  // Try Wikipedia REST API (CORS-enabled, no key needed)
-  var wikiName = name.replace(/ /g, '_');
-  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(wikiName), {
-    headers: {'Accept': 'application/json'}
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    var thumb = data.thumbnail || data.originalimage;
-    if (thumb && thumb.source) {
-      var credit = 'Wikipedia / Wikimedia Commons';
-      speciesPhotoCache[name] = {url: thumb.source, credit: credit};
-      showImg(thumb.source, credit);
-    } else {
-      // Try with common name variations
-      var altName = name.split(' ').join('_').split('(')[0].trim();
-      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(altName), {
-        headers: {'Accept': 'application/json'}
-      })
-      .then(function(r2) { return r2.json(); })
-      .then(function(d2) {
-        var t2 = d2.thumbnail || d2.originalimage;
-        if (t2 && t2.source) {
-          speciesPhotoCache[name] = {url: t2.source, credit: 'Wikipedia / Wikimedia Commons'};
-          showImg(t2.source, 'Wikipedia / Wikimedia Commons');
-        } else {
-          speciesPhotoCache[name] = null;
-          hideAll();
-        }
-      });
-    }
-  })
-  .catch(function() {
-    speciesPhotoCache[name] = null;
-    hideAll();
-  });
+  // Use override title if available, else derive from name
+  var wikiName = WIKI_OVERRIDES[name] || name.split(' ').join('_');
+
+  function tryWiki(articleName, fallback) {
+    fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(articleName), {
+      headers: {'Accept': 'application/json'}
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var thumb = data.thumbnail || data.originalimage;
+      if (thumb && thumb.source) {
+        speciesPhotoCache[name] = {url: thumb.source, credit: '© Wikimedia Commons'};
+        showImg(thumb.source, '© Wikimedia Commons');
+      } else if (fallback) {
+        tryWiki(fallback, null);
+      } else {
+        speciesPhotoCache[name] = null;
+        hideAll();
+      }
+    })
+    .catch(function() {
+      if (fallback) { tryWiki(fallback, null); }
+      else { speciesPhotoCache[name] = null; hideAll(); }
+    });
+  }
+
+  // Try primary name, fall back to plain name
+  var fallbackName = name.split(' ').join('_');
+  tryWiki(wikiName, wikiName !== fallbackName ? fallbackName : null);
 }
 
 function drawPlants(plants) {
