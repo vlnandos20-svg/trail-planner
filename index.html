@@ -1497,14 +1497,13 @@ function drawPubs(routeId) {
       iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
     });
     var mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(p.name + ', ' + (p.address||''));
-    var websiteLink = p.website ? '<a href="' + p.website + '" target="_blank" style="display:inline-block;margin-top:6px;margin-right:6px;padding:4px 10px;background:#2d5a27;color:#fff;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none">🌐 Website</a>' : '';
     var mapsLink = '<a href="' + mapsUrl + '" target="_blank" style="display:inline-block;margin-top:6px;padding:4px 10px;background:#1a3a7a;color:#fff;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none">📍 Google Maps</a>';
     var popup = '<div class="pub-popup">' +
       '<div class="pub-popup-type">' + (isPub ? '🍺 Pub' : '☕ Café') + '</div>' +
       '<div class="pub-popup-name">' + p.name + '</div>' +
       '<div class="pub-popup-rating">★ ' + p.rating + ' · ' + p.source + '</div>' +
       '<div class="pub-popup-desc">' + p.desc + '</div>' +
-      '<div>' + websiteLink + mapsLink + '</div>' +
+      '<div>' + mapsLink + '</div>' +
     '</div>';
     // Spread pub away from occupied positions (S, F, station, highlights, other pubs)
     var pubPos = (function(lat, lng) {
