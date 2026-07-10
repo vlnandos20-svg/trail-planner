@@ -1114,7 +1114,10 @@ function plotMap(m,arr,r){
   } else {
     result.push(L.marker(pts[0],{icon:mi('#2d5a27','S'),zIndexOffset:200}).bindPopup(startPopup).addTo(m));
     // Show separate station marker only when it's not on top of S
-    if(r.train && stDistCalc>150){
+    // Also check distance from finish (important for circular walks)
+    var stDistFromFinish=0;
+    if(pts.length>0){var dlf=(r.train.stationLat-pts[pts.length-1][0])*Math.PI/180,dlgf=(r.train.stationLng-pts[pts.length-1][1])*Math.PI/180;var af=Math.sin(dlf/2)*Math.sin(dlf/2)+Math.cos(pts[pts.length-1][0]*Math.PI/180)*Math.cos(r.train.stationLat*Math.PI/180)*Math.sin(dlgf/2)*Math.sin(dlgf/2);stDistFromFinish=6371000*2*Math.asin(Math.sqrt(af));}
+    if(r.train && stDistCalc>150 && stDistFromFinish>150){
       var stIcon=L.divIcon({className:'',html:'<div style="width:28px;height:28px;border-radius:8px;background:#1a3a7a;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🚆</div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
       result.push(L.marker([r.train.stationLat,r.train.stationLng],{icon:stIcon,zIndexOffset:150}).bindPopup('<b>'+r.train.station+' station</b><br><span style="font-size:12px;color:#4a6aaa">'+r.train.line+'</span><br><span style="font-size:12px">🚶 '+r.train.walkMins+' min walk to trail start</span>').addTo(m));
     }
@@ -1126,8 +1129,18 @@ function plotMap(m,arr,r){
     var a3=Math.sin(dlat3/2)*Math.sin(dlat3/2)+Math.cos(pts[pts.length-1][0]*Math.PI/180)*Math.cos(r.trainEnd.stationLat*Math.PI/180)*Math.sin(dlng3/2)*Math.sin(dlng3/2);
     endDistCalc=R3*2*Math.asin(Math.sqrt(a3));
   }
+  // For circular routes, don't show F if it's within 80m of S (same location)
+  var startFinishDist=0;
+  if(pts.length>1){
+    var R4=6371000,dlat4=(pts[pts.length-1][0]-pts[0][0])*Math.PI/180,dlng4=(pts[pts.length-1][1]-pts[0][1])*Math.PI/180;
+    var a4=Math.sin(dlat4/2)*Math.sin(dlat4/2)+Math.cos(pts[0][0]*Math.PI/180)*Math.cos(pts[pts.length-1][0]*Math.PI/180)*Math.sin(dlng4/2)*Math.sin(dlng4/2);
+    startFinishDist=R4*2*Math.asin(Math.sqrt(a4));
+  }
+  var isCircular=(startFinishDist<80);
   var finishPopup = r.trainEnd ? '<b>Finish</b><br><span style="font-size:12px">🚆 '+r.trainEnd.station+' station</span>' : '<b>Finish</b>';
-  if(r.trainEnd && endDistCalc<=150){
+  if(isCircular){
+    // Circular walk — S already marks the spot, skip F marker
+  } else if(r.trainEnd && endDistCalc<=150){
     // Station IS the finish — use combined F+train marker
     var combinedEndIcon=L.divIcon({className:'',html:'<div style="position:relative;width:26px;height:26px;border-radius:50%;background:#c0392b;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:sans-serif">F<div style="position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#1a3a7a;border-radius:4px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px">🚆</div></div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
     result.push(L.marker(pts[pts.length-1],{icon:combinedEndIcon,zIndexOffset:200}).bindPopup(finishPopup).addTo(m));
@@ -1414,9 +1427,9 @@ var PUB_DATA = {
   ],
 
   11: [ // Arundel & Amberley Circular
-    {lat:50.8577,lng:-0.5532,name:"The Black Rabbit",address:"Mill Road, Arundel BN18 9PA",website:"https://blackrabbitarundel.co.uk/",type:"pub",rating:"4.4★",desc:"A stunning riverside pub on the banks of the Arun with sweeping views of Arundel Castle. Popular with walkers — the terrace is one of the finest pub settings in Sussex. Local ales and excellent food.",google:"4.4",source:"Google"},
-    {lat:50.9086,lng:-0.5414,name:"The Bridge Inn, Amberley",address:"Houghton Bridge, Amberley BN18 9LR",website:"https://bridgeinnamberley.com/",type:"pub",rating:"4.3★",desc:"A picturesque pub right beside Amberley station with a sunny riverside terrace. Perfect mid-walk or end-of-walk stop. Known for its Harvey's ales and locally sourced food.",google:"4.3",source:"Google"},
-    {lat:50.8760,lng:-0.5200,name:"The George Inn, Burpham",address:"Burpham, Arundel BN18 9RR",website:"https://thegeorgeinnburpham.co.uk/",type:"pub",rating:"4.5★",desc:"An award-winning village pub in one of the most peaceful villages in the South Downs. No through road means it's very quiet. Exceptional food and a wonderful garden.",google:"4.5",source:"Google"}
+    {lat:50.8577,lng:-0.5532,name:"The Black Rabbit",address:"Mill Road, Arundel BN18 9PA",website:"",type:"pub",rating:"4.4★",desc:"A stunning riverside pub on the banks of the Arun with sweeping views of Arundel Castle. Popular with walkers — the terrace is one of the finest pub settings in Sussex. Local ales and excellent food.",google:"4.4",source:"Google"},
+    {lat:50.9086,lng:-0.5414,name:"The Bridge Inn, Amberley",address:"Houghton Bridge, Amberley BN18 9LR",website:"https://www.bridgeinnamberley.com/",type:"pub",rating:"4.3★",desc:"A picturesque pub right beside Amberley station with a sunny riverside terrace. Perfect mid-walk or end-of-walk stop. Known for its Harvey's ales and locally sourced food.",google:"4.3",source:"Google"},
+    {lat:50.8760,lng:-0.5200,name:"The George Inn, Burpham",address:"Burpham, Arundel BN18 9RR",website:"",type:"pub",rating:"4.5★",desc:"An award-winning village pub in one of the most peaceful villages in the South Downs. No through road means it's very quiet. Exceptional food and a wonderful garden.",google:"4.5",source:"Google"}
   ],
   12: [ // Otford & Shoreham Circular
     {lat:51.3125,lng:0.1976,name:"The Bull Inn, Otford",address:"High Street, Otford TN14 5PG",website:"",type:"pub",rating:"4.0★",desc:"A welcoming village pub in the heart of Otford, ideal for the start or end of the walk. Traditional pub atmosphere with real ales and a good menu.",google:"4.0",source:"Google"},
@@ -1434,9 +1447,9 @@ var PUB_DATA = {
     {lat:51.702787,lng:-0.613866,name:"The Cross Keys, Great Missenden",address:"High Street, Great Missenden HP16 0AU",website:"",type:"pub",rating:"4.3★",desc:"A welcoming pub in Roald Dahl's village, a short walk from the Roald Dahl Museum. Good food and ales make it a perfect end-of-walk destination.",google:"4.3",source:"Google"}
   ],
   15: [ // Henley & Hambleden Circular
-    {lat:51.5342,lng:-0.9004,name:"The Angel on the Bridge, Henley",address:"Thameside, Henley-on-Thames RG9 1BH",website:"https://www.angelonthebridge.co.uk/",type:"pub",rating:"4.3★",desc:"A beautiful riverside pub right on the Thames at Henley, with a wonderful terrace overlooking the river. Excellent food and a great starting point for the walk.",google:"4.3",source:"Google"},
+    {lat:51.5342,lng:-0.9004,name:"The Angel on the Bridge, Henley",address:"Thameside, Henley-on-Thames RG9 1BH",website:"",type:"pub",rating:"4.3★",desc:"A beautiful riverside pub right on the Thames at Henley, with a wonderful terrace overlooking the river. Excellent food and a great starting point for the walk.",google:"4.3",source:"Google"},
     {lat:51.564037,lng:-0.860548,name:"The Stag & Huntsman, Hambleden",address:"Hambleden, Henley-on-Thames RG9 6RP",website:"https://www.thestagandhuntsman.co.uk/",type:"pub",rating:"4.5★",desc:"A quintessential English country pub in the heart of Hambleden village, one of England's most photographed. Excellent food using local produce, beautiful garden, and a warm welcome for walkers.",google:"4.5",source:"Google"},
-    {lat:51.551398,lng:-0.871103,name:"The Flower Pot, Aston",address:"Aston, Henley-on-Thames RG9 3DG",website:"https://theflowerpotaston.co.uk/",type:"pub",rating:"4.4★",desc:"A wonderful riverside pub on the Thames towpath with one of the best beer gardens in the Chilterns. A Brakspear tied house with excellent ales.",google:"4.4",source:"Google"}
+    {lat:51.551398,lng:-0.871103,name:"The Flower Pot, Aston",address:"Aston, Henley-on-Thames RG9 3DG",website:"",type:"pub",rating:"4.4★",desc:"A wonderful riverside pub on the Thames towpath with one of the best beer gardens in the Chilterns. A Brakspear tied house with excellent ales.",google:"4.4",source:"Google"}
   ],
   16: [ // Tring & Aldbury Circular
     {lat:51.8006,lng:-0.5970,name:"The Greyhound Inn, Aldbury",address:"Stocks Road, Aldbury HP23 5RT",website:"https://www.greyhoundaldbury.co.uk/",type:"pub",rating:"4.4★",desc:"A beautiful 15th-century inn on the village green in Aldbury, beside the famous duck pond and stocks. One of the most picturesque pub settings in the Chilterns. Harvey's and London Pride on tap.",google:"4.4",source:"Google"},
@@ -1444,14 +1457,14 @@ var PUB_DATA = {
     {lat:51.800616,lng:-0.622757,name:"The Robin Hood, Tring Station",address:"Brook End, Tring HP23 6JX",website:"",type:"pub",rating:"3.9★",desc:"Convenient pub near Tring station, useful at the start or end of the walk. Simple food and a friendly atmosphere.",google:"3.9",source:"Google"}
   ],
   17: [ // Marlow & Hambleden Circular
-    {lat:51.5716,lng:-0.7759,name:"The Compleat Angler, Marlow",address:"Bisham Road, Marlow SL7 1RG",website:"https://www.completeangler.co.uk/",type:"pub",rating:"4.3★",desc:"A historic hotel bar and restaurant right on the Thames at Marlow, with a stunning riverside terrace. Named after Izaak Walton's 1653 book. Excellent for a pre or post-walk treat.",google:"4.3",source:"Google"},
+    {lat:51.5716,lng:-0.7759,name:"The Compleat Angler, Marlow",address:"Bisham Road, Marlow SL7 1RG",website:"https://www.macdonald-hotels.co.uk/hotels/england/berkshire/macdonald-compleat-angler",type:"pub",rating:"4.3★",desc:"A historic hotel bar and restaurant right on the Thames at Marlow, with a stunning riverside terrace. Named after Izaak Walton's 1653 book. Excellent for a pre or post-walk treat.",google:"4.3",source:"Google"},
     {lat:51.5445,lng:-0.8550,name:"The Stag & Huntsman, Hambleden",address:"Hambleden, Henley-on-Thames RG9 6RP",website:"https://www.thestagandhuntsman.co.uk/",type:"pub",rating:"4.5★",desc:"The jewel of Hambleden village — a quintessential English country pub with excellent food, real ales, and a beautiful setting. Many walkers make this their primary destination.",google:"4.5",source:"Google"},
     {lat:51.5600,lng:-0.7900,name:"The Hare & Hounds, Marlow",address:"Pound Lane, Marlow SL7 2AE",website:"",type:"pub",rating:"4.1★",desc:"A relaxed neighbourhood pub a short walk from Marlow town centre, popular with locals and returning walkers.",google:"4.1",source:"Google"}
   ],
   18: [ // Guildford to Gomshall
-    {lat:51.228,lng:-0.535,name:"The Percy Arms, Chilworth",address:"Dorking Road, Chilworth GU4 8NP",website:"https://www.percyarms.com/",type:"pub",rating:"4.4★",desc:"A superb dining pub in the Surrey Hills, right on the North Downs Way. Beautifully converted with excellent locally sourced food. A favourite among Surrey Hills walkers.",google:"4.4",source:"Google"},
-    {lat:51.224,lng:-0.472,name:"The William Bray, Shere",address:"Middle Street, Shere GU5 9HF",website:"https://www.williambrayshere.co.uk/",type:"pub",rating:"4.5★",desc:"An outstanding pub in arguably the prettiest village in Surrey, just off the route. Named after the diarist William Bray who lived in Shere for 70 years. Excellent food and a lovely garden by the Tillingbourne stream.",google:"4.5",source:"Google"},
-    {lat:51.2195,lng:-0.4415,name:"The Black Horse, Gomshall",address:"Gomshall Lane, Gomshall GU5 9LB",website:"https://www.blackhorsegomshall.co.uk/",type:"pub",rating:"4.2★",desc:"A welcoming pub right in Gomshall village, a perfect end-of-walk destination before catching the train back to London. Traditional Surrey pub with good ales and food.",google:"4.2",source:"Google"}
+    {lat:51.228,lng:-0.535,name:"The Percy Arms, Chilworth",address:"Dorking Road, Chilworth GU4 8NP",website:"",type:"pub",rating:"4.4★",desc:"A superb dining pub in the Surrey Hills, right on the North Downs Way. Beautifully converted with excellent locally sourced food. A favourite among Surrey Hills walkers.",google:"4.4",source:"Google"},
+    {lat:51.224,lng:-0.472,name:"The William Bray, Shere",address:"Middle Street, Shere GU5 9HF",website:"",type:"pub",rating:"4.5★",desc:"An outstanding pub in arguably the prettiest village in Surrey, just off the route. Named after the diarist William Bray who lived in Shere for 70 years. Excellent food and a lovely garden by the Tillingbourne stream.",google:"4.5",source:"Google"},
+    {lat:51.2195,lng:-0.4415,name:"The Black Horse, Gomshall",address:"Gomshall Lane, Gomshall GU5 9LB",website:"",type:"pub",rating:"4.2★",desc:"A welcoming pub right in Gomshall village, a perfect end-of-walk destination before catching the train back to London. Traditional Surrey pub with good ales and food.",google:"4.2",source:"Google"}
   ]
 
 };
