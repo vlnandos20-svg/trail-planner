@@ -1537,7 +1537,7 @@ function plotMap(m,arr,r){
   var startPopup = r.train ? '<b>Start</b><br><span style="font-size:12px">🚆 '+r.train.station+' station</span>' : '<b>Start</b>';
   if(r.train && stDistCalc<=150){
     // Station IS the start — use a combined S+train marker
-    var combinedIcon=L.divIcon({className:'',html:'<div style="position:relative;width:26px;height:26px;border-radius:50%;background:#2d5a27;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:sans-serif">S<div style="position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#1a3a7a;border-radius:4px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px">🚆</div></div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
+    var combinedIcon=L.divIcon({className:'',html:'<div style="position:relative;width:24px;height:32px;display:flex;flex-direction:column;align-items:center;"><div style="position:relative;width:24px;height:24px;border-radius:50%;background:#2d5a27;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:-apple-system,sans-serif;">S<div style="position:absolute;top:-8px;right:-8px;background:#1a3a7a;border-radius:4px;padding:1px 3px;font-size:8px;border:1px solid #fff;">🚂</div></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid #2d5a27;margin-top:-1px;"></div></div>',iconSize:[24,32],iconAnchor:[12,32],popupAnchor:[0,-34]})
     result.push(L.marker(pts[0],{icon:combinedIcon,zIndexOffset:200}).bindPopup(startPopup).addTo(m));
   } else {
     result.push(L.marker(pts[0],{icon:mi('#2d5a27','S'),zIndexOffset:200}).bindPopup(startPopup).addTo(m));
@@ -1570,7 +1570,7 @@ function plotMap(m,arr,r){
     // Circular walk — S already marks the spot, skip F marker
   } else if(r.trainEnd && endDistCalc<=150){
     // Station IS the finish — use combined F+train marker
-    var combinedEndIcon=L.divIcon({className:'',html:'<div style="position:relative;width:26px;height:26px;border-radius:50%;background:#c0392b;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:sans-serif">F<div style="position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#1a3a7a;border-radius:4px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px">🚆</div></div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
+    var combinedEndIcon=L.divIcon({className:'',html:'<div style="position:relative;width:24px;height:32px;display:flex;flex-direction:column;align-items:center;"><div style="position:relative;width:24px;height:24px;border-radius:50%;background:#c0392b;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:-apple-system,sans-serif;">F<div style="position:absolute;top:-8px;right:-8px;background:#1a3a7a;border-radius:4px;padding:1px 3px;font-size:8px;border:1px solid #fff;">🚂</div></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid #c0392b;margin-top:-1px;"></div></div>',iconSize:[24,32],iconAnchor:[12,32],popupAnchor:[0,-34]})
     result.push(L.marker(pts[pts.length-1],{icon:combinedEndIcon,zIndexOffset:200}).bindPopup(finishPopup).addTo(m));
   } else {
     result.push(L.marker(pts[pts.length-1],{icon:mi('#c0392b','F'),zIndexOffset:200}).bindPopup(finishPopup).addTo(m));
@@ -1628,7 +1628,13 @@ function plotMap(m,arr,r){
   return result;
 }
 
-function mi(color,label){return L.divIcon({className:'',html:'<div style="width:26px;height:26px;border-radius:50%;background:'+color+';border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:-apple-system,sans-serif;">'+label+'</div>',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14]});}
+function mi(color,label){
+  var pin='<div style="position:relative;width:24px;height:32px;display:flex;flex-direction:column;align-items:center;">'+
+    '<div style="width:24px;height:24px;border-radius:50%;background:'+color+';border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:-apple-system,sans-serif;">'+label+'</div>'+
+    '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid '+color+';margin-top:-1px;filter:drop-shadow(0 2px 1px rgba(0,0,0,0.2));"></div>'+
+  '</div>';
+  return L.divIcon({className:'',html:pin,iconSize:[24,32],iconAnchor:[12,32],popupAnchor:[0,-34]});
+}
 
 var _overviewMarkers = [];
 var _currentFilteredRoutes = null;
