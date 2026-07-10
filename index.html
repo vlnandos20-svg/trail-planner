@@ -2216,35 +2216,15 @@ function drawPubs(routeId) {
       '<div class="pub-popup-desc">' + p.desc + '</div>' +
       '<div>' + mapsLink + '</div>' +
     '</div>';
-    // Spread pub away from occupied positions (S, F, station, highlights, other pubs)
-    var pubPos = (function(lat, lng) {
-      if (!map._occupiedPts) return [lat, lng];
-      var THRESH = 55; // metres
-      function dist(a, b) {
-        var R=6371000, dlat=(b[0]-a[0])*Math.PI/180, dlng=(b[1]-a[1])*Math.PI/180;
-        var x=Math.sin(dlat/2)*Math.sin(dlat/2)+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dlng/2)*Math.sin(dlng/2);
-        return R*2*Math.asin(Math.sqrt(x));
-      }
-      // Try a spiral of offsets until clear
-      var offsets=[[0,0],[0,0.0007],[0.0006,-0.0005],[-0.0006,-0.0005],[0,-0.001],[0.001,0],[-0.001,0],[0.0007,0.0007],[-0.0007,0.0007],[0.0008,-0.0008],[-0.0008,-0.0008],[0,0.0014],[0.0012,-0.001],[-0.0012,-0.001]];
-      for (var o=0; o<offsets.length; o++) {
-        var tLat=lat+offsets[o][0], tLng=lng+offsets[o][1];
-        var ok=true;
-        for (var q=0; q<map._occupiedPts.length; q++) {
-          if (dist([tLat,tLng], map._occupiedPts[q]) < THRESH) { ok=false; break; }
-        }
-        if (ok) { map._occupiedPts.push([tLat,tLng]); return [tLat,tLng]; }
-      }
-      map._occupiedPts.push([lat,lng]); return [lat,lng];
-    })(p.lat, p.lng);
-    pubLayers.push(L.marker(pubPos, {icon: icon, zIndexOffset: 80}).bindPopup(popup, {maxWidth: 260}).addTo(map));
+    var pubMarker = L.marker([p.lat, p.lng], {icon: icon, zIndexOffset: 80}).bindPopup(popup, {maxWidth: 260}).addTo(map);
+    if (map._oms) map._oms.addMarker(pubMarker);
+    pubLayers.push(pubMarker);
   });
 }
 
 function clearPubs() {
   pubLayers.forEach(function(l) { if (map) map.removeLayer(l); });
   pubLayers = [];
-  if (map) map._occupiedPts = [];
 }
 
 // ── PLANT DATA ────────────────────────────────────────────────────────────────
