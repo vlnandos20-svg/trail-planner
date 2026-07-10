@@ -172,6 +172,18 @@
   .weather-temp { font-size: 11px; font-weight: 700; color: #1a1a18; }
   .weather-rain { font-size: 9px; color: #4a7aaa; margin-top: 2px; }
   .elevation-card { margin: 0 0 16px 0; }
+  #elvOverlay {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+    padding: 12px 16px 20px;
+    z-index: 200;
+    touch-action: none;
+    display: none;
+  }
+  #elvOverlay.active { display: block; }
   .elevation-card canvas { width: 100%; height: 90px; display: block; border-radius: 8px; }
   .section-title { font-size: 11px; font-weight: 700; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
   .detail-desc { font-size: 14px; color: #4a4a46; line-height: 1.65; margin-bottom: 18px; }
@@ -1650,35 +1662,92 @@ function drawElevationChart(el, elevs, pts) {
     if(_elevMarker&&map){map.removeLayer(_elevMarker);_elevMarker=null;}
   }
 
+  // Desktop mouse events
   svg.addEventListener('mousemove',function(e){onElevMove(e.clientX);});
   svg.addEventListener('mouseleave',onElevLeave);
+
+  // Mobile touch: show fixed overlay at bottom so chart stays reachable
   svg.addEventListener('touchstart',function(e){
-    if(e.touches[0]) onElevMove(e.touches[0].clientX);
-    // On mobile: collapse panel to half so map is visible above
-    if(window.innerWidth < 768){
-      var dp=document.getElementById('detailPanel');
-      if(dp){ dp._prevClass=dp.className; dp.classList.add('elev-scrub'); }
-    }
-  },{passive:true});
-  svg.addEventListener('touchmove',function(e){
+    if(window.innerWidth >= 768){ return; } // desktop handles via mouse
     e.preventDefault();
-    if(e.touches[0]) onElevMove(e.touches[0].clientX);
+
+    // Build fixed overlay with a clone of the SVG
+    var overlay=document.getElementById('elvOverlay');
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.id='elvOverlay';
+      document.body.appendChild(overlay);
+    }
+    // Clone the SVG into the overlay
+    var svgClone=svg.cloneNode(true);
+    svgClone.id='elvSvgOverlay';
+    svgClone.style.width='100%';
+    svgClone.style.height='90px';
+    overlay.innerHTML='<div style="font-size:11px;font-weight:700;color:#9b9b97;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">ELEVATION PROFILE</div>';
+    overlay.appendChild(svgClone);
+    overlay.classList.add('active');
+
+    // Collapse panel so map shows
+    var dp=document.getElementById('detailPanel');
+    if(dp){ dp.classList.add('elev-scrub'); }
+
+    // Operate on the overlay SVG from now on
+    function getOverlaySvg(){ return document.getElementById('elvSvgOverlay')||svg; }
+
+    function overlayMove(clientX){
+      var oSvg=getOverlaySvg();
+      var rect=oSvg.getBoundingClientRect();
+      var relX=(clientX-rect.left)/rect.width;
+      var svgX=relX*W;
+      var best=svgPts[0], bestDist=999999;
+      for(var i=0;i<svgPts.length;i++){
+        var d=Math.abs(svgPts[i].x-svgX);
+        if(d<bestDist){bestDist=d;best=svgPts[i];}
+      }
+      // Update overlay SVG elements
+      var cursor=oSvg.querySelector('#elvCursor,line[id="elvCursor"]')||oSvg.querySelector('line');
+      var dot=oSvg.querySelector('circle');
+      var box=oSvg.querySelector('rect[id="elvBox"]')||null;
+      var elevTxt=oSvg.querySelector('text[id="elvElevTxt"]')||null;
+      var distTxt=oSvg.querySelector('text[id="elvDistTxt"]')||null;
+      // Find by querying all elements since clone loses getElementById
+      oSvg.querySelectorAll('line').forEach(function(l){ if(l.getAttribute('stroke-dasharray')){ l.setAttribute('x1',best.x);l.setAttribute('x2',best.x); }});
+      oSvg.querySelectorAll('circle').forEach(function(c){ c.setAttribute('cx',best.x);c.setAttribute('cy',best.y); });
+      var boxW=72;
+      var boxX=Math.min(Math.max(best.x-boxW/2,PAD),W-boxW-PAD);
+      oSvg.querySelectorAll('rect[rx="6"]').forEach(function(r){ r.setAttribute('x',boxX);r.setAttribute('opacity','0.92'); });
+      var txts=oSvg.querySelectorAll('text[font-weight="700"][fill="#fff"]');
+      if(txts[0]){txts[0].setAttribute('x',boxX+boxW/2);txts[0].textContent=best.e+'m elevation';txts[0].setAttribute('opacity','1');}
+      var dtxts=oSvg.querySelectorAll('text[fill="#ccc"]');
+      if(dtxts[0]){dtxts[0].setAttribute('x',boxX+boxW/2);dtxts[0].textContent=(best.d/1000).toFixed(1)+' km along route';dtxts[0].setAttribute('opacity','1');}
+      // Map marker
+      if(map && typeof L!=='undefined'){
+        if(_elevMarker) map.removeLayer(_elevMarker);
+        var icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#c0392b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+        _elevMarker=L.marker([best.lat,best.lng],{icon:icon,zIndexOffset:500,interactive:false}).addTo(map);
+      }
+    }
+
+    function overlayEnd(){
+      var overlay2=document.getElementById('elvOverlay');
+      if(overlay2){ overlay2.classList.remove('active'); }
+      var dp2=document.getElementById('detailPanel');
+      if(dp2){ dp2.classList.remove('elev-scrub'); }
+      if(_elevMarker&&map){ map.removeLayer(_elevMarker); _elevMarker=null; }
+      document.removeEventListener('touchmove',onDocMove);
+      document.removeEventListener('touchend',onDocEnd);
+      document.removeEventListener('touchcancel',onDocEnd);
+    }
+
+    function onDocMove(e){ e.preventDefault(); if(e.touches[0]) overlayMove(e.touches[0].clientX); }
+    function onDocEnd(){ overlayEnd(); }
+
+    document.addEventListener('touchmove',onDocMove,{passive:false});
+    document.addEventListener('touchend',onDocEnd,{passive:true});
+    document.addEventListener('touchcancel',onDocEnd,{passive:true});
+
+    if(e.touches[0]) overlayMove(e.touches[0].clientX);
   },{passive:false});
-  svg.addEventListener('touchend',function(){
-    onElevLeave();
-    // Restore panel to previous position
-    if(window.innerWidth < 768){
-      var dp=document.getElementById('detailPanel');
-      if(dp){ dp.classList.remove('elev-scrub'); }
-    }
-  });
-  svg.addEventListener('touchcancel',function(){
-    onElevLeave();
-    if(window.innerWidth < 768){
-      var dp=document.getElementById('detailPanel');
-      if(dp){ dp.classList.remove('elev-scrub'); }
-    }
-  });
 }
 
 function clearOverviewPins(){
