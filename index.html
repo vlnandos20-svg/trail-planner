@@ -417,6 +417,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
 <script>
 var ROUTES = [
   {
@@ -1070,6 +1071,7 @@ function openDetail(id){
 
 function closeDetail(){
   clearPubs();
+  cleanupOMS();
   var dp=document.getElementById('detailPanel');
   dp.className='detail-panel';
   // Restore filters and topbar
@@ -1141,6 +1143,20 @@ function plotMap(m,arr,r){
 
   // Highlight markers with history
   if(r.highlightMarkers){
+    // Use OverlappingMarkerSpiderfier for exact coords with auto-spread on overlap
+    if(!m._oms && typeof OverlappingMarkerSpiderfier !== 'undefined'){
+      m._oms = new OverlappingMarkerSpiderfier(m, {
+        keepSpiderfied: true,
+        nearbyDistance: 20,
+        circleFootSeparation: 40,
+        spiralFootSeparation: 36,
+        spiralLengthStart: 28,
+        spiralLengthFactor: 5,
+        legWeight: 1.5,
+        legColors: { usual: '#e8a020', highlighted: '#2d5a27' }
+      });
+    }
+    var oms = m._oms;
     r.highlightMarkers.forEach(function(h){
       var hlIcon=L.divIcon({
         className:'',
@@ -1152,7 +1168,9 @@ function plotMap(m,arr,r){
         '<div class="hl-popup-name">'+h.name+'</div>' +
         '<div class="hl-popup-history">'+h.history+'</div>' +
       '</div>';
-      result.push(L.marker([h.lat,h.lng],{icon:hlIcon,zIndexOffset:100}).bindPopup(popupHtml,{maxWidth:280}).addTo(m));
+      var mk=L.marker([h.lat,h.lng],{icon:hlIcon,zIndexOffset:100}).bindPopup(popupHtml,{maxWidth:280}).addTo(m);
+      if(oms) oms.addMarker(mk);
+      result.push(mk);
     });
   }
 
@@ -1167,6 +1185,9 @@ var _currentFilteredRoutes = null;
 function clearOverviewPins(){
   _overviewMarkers.forEach(function(m){ if(map) map.removeLayer(m); });
   _overviewMarkers = [];
+}
+function cleanupOMS(){
+  if(map && map._oms){ map._oms.clearMarkers(); delete map._oms; }
 }
 
 function plotAllPins(filteredRoutes){
