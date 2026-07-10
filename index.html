@@ -1507,7 +1507,8 @@ function closeDetail(){
   var tb=document.getElementById('topBar');
   if(fb)fb.classList.remove('hidden');
   if(tb)tb.classList.remove('detail-active');
-  sheetState='half'; us();
+  // Only show sheet if routes are currently filtered, otherwise keep hidden
+  if(_currentFilteredRoutes && _currentFilteredRoutes.length > 0){ sheetState='peek'; us(); } else { sheetState='hidden'; us(); }
   mainLayers.forEach(function(l){if(map)map.removeLayer(l);}); mainLayers=[];
   // Re-show all pins
   setTimeout(function(){plotAllPins();},100);
