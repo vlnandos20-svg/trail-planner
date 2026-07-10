@@ -105,6 +105,7 @@
   }
   .detail-panel.peek { transform: translateY(calc(100% - 82px)); }
   .detail-panel.half { transform: translateY(40%); }
+  .detail-panel.elev-scrub { transform: translateY(52%) !important; transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
   .detail-panel.full { transform: translateY(0); }
 
   .detail-drag-bar {
@@ -1546,39 +1547,47 @@ function drawElevationChart(el, elevs, pts) {
   var totalAscent=0;
   for(var i=1;i<elevs.length;i++){if(elevs[i]>elevs[i-1])totalAscent+=elevs[i]-elevs[i-1];}
 
-  var W=340, H=80, PAD=4, BOTTOM=14;
+  var W=340, H=90, PAD=4, BOTTOM=16, LABH=32;
+  // LABH = space at top for the floating tooltip
+  var chartH = H - LABH;
   var svgPts=elevs.map(function(e,i){
     var x=PAD+(dists[i]/totalDist)*(W-2*PAD);
-    var y=H-BOTTOM-PAD-((e-minE)/range)*(H-BOTTOM-2*PAD);
+    var y=LABH+PAD+((1-(e-minE)/range)*(chartH-2*PAD));
     return {x:x,y:y,e:Math.round(e),lat:pts[i].lat,lng:pts[i].lng,d:dists[i]};
   });
   var polyStr=svgPts.map(function(p){return p.x+','+p.y;}).join(' ');
-  var fillStr=(PAD+','+(H-BOTTOM))+' '+polyStr+' '+((W-PAD)+','+(H-BOTTOM));
+  var fillStr=(PAD+','+(H))+' '+polyStr+' '+((W-PAD)+','+(H));
   var distKm=(totalDist/1000).toFixed(1);
 
-  var html='<div class="section-title" style="margin-bottom:6px">ELEVATION PROFILE <span style="font-size:9px;color:#9b9b97;font-weight:400;text-transform:none">(tap chart to see position on map)</span></div>'+
+  var html='<div class="section-title" style="margin-bottom:6px">ELEVATION PROFILE</div>'+
     '<div style="font-size:10px;color:#9b9b97;text-align:right;margin-bottom:4px">Total ascent: ~'+Math.round(totalAscent)+'m</div>'+
-    '<div style="position:relative">'+
-    '<svg id="elvSvg" viewBox="0 0 '+W+' '+H+'" style="width:100%;height:80px;display:block;cursor:crosshair" preserveAspectRatio="none">'+
-    '<defs><linearGradient id="elvGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27" stop-opacity="0.3"/><stop offset="100%" stop-color="#2d5a27" stop-opacity="0.05"/></linearGradient></defs>'+
+    '<div style="position:relative;touch-action:none;">'+
+    '<svg id="elvSvg" viewBox="0 0 '+W+' '+H+'" style="width:100%;height:'+H+'px;display:block;cursor:crosshair;overflow:visible" preserveAspectRatio="none">'+
+    '<defs><linearGradient id="elvGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27" stop-opacity="0.35"/><stop offset="100%" stop-color="#2d5a27" stop-opacity="0.05"/></linearGradient></defs>'+
+    // Chart area
     '<polygon points="'+fillStr+'" fill="url(#elvGrad)"/>'+
-    '<polyline points="'+polyStr+'" fill="none" stroke="#2d5a27" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
-    '<line id="elvCursor" x1="-999" y1="0" x2="-999" y2="'+(H-BOTTOM)+'" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="3,2"/>'+
-    '<circle id="elvDot" cx="-999" cy="0" r="4" fill="#c0392b" stroke="#fff" stroke-width="1.5"/>'+
-    '<text id="elvLabel" x="-999" y="10" font-size="9" fill="#c0392b" font-weight="700" text-anchor="middle"></text>'+
+    '<polyline points="'+polyStr+'" fill="none" stroke="#2d5a27" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+    // Scrubber elements (hidden initially)
+    '<line id="elvCursor" x1="-999" y1="'+LABH+'" x2="-999" y2="'+H+'" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="3,2"/>'+
+    '<circle id="elvDot" cx="-999" cy="0" r="5" fill="#c0392b" stroke="#fff" stroke-width="2"/>'+
+    // Floating tooltip box (hidden initially)
+    '<rect id="elvBox" x="-999" y="2" width="72" height="26" rx="6" fill="#1a1a18" opacity="0"/>'+
+    '<text id="elvElevTxt" x="-999" y="13" font-size="10" font-weight="700" fill="#fff" text-anchor="middle" opacity="0"></text>'+
+    '<text id="elvDistTxt" x="-999" y="24" font-size="9" fill="#ccc" text-anchor="middle" opacity="0"></text>'+
+    // X axis labels
     '<text x="'+PAD+'" y="'+(H-2)+'" font-size="8" fill="#9b9b97">0 km</text>'+
     '<text x="'+(W/2)+'" y="'+(H-2)+'" font-size="8" fill="#9b9b97" text-anchor="middle">'+(distKm/2).toFixed(1)+' km</text>'+
     '<text x="'+(W-PAD)+'" y="'+(H-2)+'" font-size="8" fill="#9b9b97" text-anchor="end">'+distKm+' km</text>'+
-    '<text x="'+PAD+'" y="12" font-size="8" fill="#9b9b97">'+Math.round(maxE)+'m</text>'+
-    '<text x="'+PAD+'" y="'+(H-BOTTOM-2)+'" font-size="8" fill="#9b9b97">'+Math.round(minE)+'m</text>'+
-    '<rect id="elvHitArea" x="0" y="0" width="'+W+'" height="'+(H-BOTTOM)+'" fill="transparent"/>'+
+    // Y axis labels
+    '<text x="'+(PAD+2)+'" y="'+(LABH+12)+'" font-size="8" fill="#9b9b97">'+Math.round(maxE)+'m</text>'+
+    '<text x="'+(PAD+2)+'" y="'+(H-BOTTOM)+'" font-size="8" fill="#9b9b97">'+Math.round(minE)+'m</text>'+
+    // Hit area
+    '<rect id="elvHit" x="0" y="'+LABH+'" width="'+W+'" height="'+(chartH)+'" fill="transparent"/>'+
     '</svg></div>';
   el.innerHTML=html;
 
-  // Store data on the SVG for the event handler
   var svg=document.getElementById('elvSvg');
   if(!svg) return;
-  svg._elvData={pts:svgPts,W:W,H:H,BOTTOM:BOTTOM};
 
   function onElevMove(clientX){
     var rect=svg.getBoundingClientRect();
@@ -1590,18 +1599,36 @@ function drawElevationChart(el, elevs, pts) {
       var d=Math.abs(svgPts[i].x-svgX);
       if(d<bestDist){bestDist=d;best=svgPts[i];}
     }
-    // Update cursor
     var cursor=document.getElementById('elvCursor');
     var dot=document.getElementById('elvDot');
-    var label=document.getElementById('elvLabel');
+    var box=document.getElementById('elvBox');
+    var elevTxt=document.getElementById('elvElevTxt');
+    var distTxt=document.getElementById('elvDistTxt');
+
+    // Update scrubber line and dot
     if(cursor){cursor.setAttribute('x1',best.x);cursor.setAttribute('x2',best.x);}
     if(dot){dot.setAttribute('cx',best.x);dot.setAttribute('cy',best.y);}
-    if(label){
-      label.setAttribute('x',Math.min(Math.max(best.x,20),W-20));
-      label.setAttribute('y',Math.max(best.y-8,10));
-      label.textContent=best.e+'m';
+
+    // Update tooltip box - keep it inside SVG bounds
+    var boxW=72, boxH=26;
+    var boxX=Math.min(Math.max(best.x-boxW/2, PAD), W-boxW-PAD);
+    var distLabel=(best.d/1000).toFixed(1)+' km';
+    if(box){
+      box.setAttribute('x',boxX);
+      box.setAttribute('opacity','0.92');
     }
-    // Show marker on map
+    if(elevTxt){
+      elevTxt.setAttribute('x',boxX+boxW/2);
+      elevTxt.textContent=best.e+'m elevation';
+      elevTxt.setAttribute('opacity','1');
+    }
+    if(distTxt){
+      distTxt.setAttribute('x',boxX+boxW/2);
+      distTxt.textContent=distLabel+' along route';
+      distTxt.setAttribute('opacity','1');
+    }
+
+    // Show map marker (visible on desktop always, on mobile when panel is collapsed)
     if(map && typeof L!=='undefined'){
       if(_elevMarker) map.removeLayer(_elevMarker);
       var icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#c0392b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',iconSize:[14,14],iconAnchor:[7,7]});
@@ -1612,24 +1639,45 @@ function drawElevationChart(el, elevs, pts) {
   function onElevLeave(){
     var cursor=document.getElementById('elvCursor');
     var dot=document.getElementById('elvDot');
+    var box=document.getElementById('elvBox');
+    var elevTxt=document.getElementById('elvElevTxt');
+    var distTxt=document.getElementById('elvDistTxt');
     if(cursor){cursor.setAttribute('x1',-999);cursor.setAttribute('x2',-999);}
     if(dot){dot.setAttribute('cx',-999);}
+    if(box){box.setAttribute('x',-999);box.setAttribute('opacity','0');}
+    if(elevTxt){elevTxt.setAttribute('x',-999);elevTxt.setAttribute('opacity','0');}
+    if(distTxt){distTxt.setAttribute('x',-999);distTxt.setAttribute('opacity','0');}
     if(_elevMarker&&map){map.removeLayer(_elevMarker);_elevMarker=null;}
   }
 
   svg.addEventListener('mousemove',function(e){onElevMove(e.clientX);});
   svg.addEventListener('mouseleave',onElevLeave);
   svg.addEventListener('touchstart',function(e){
-    // On mobile: scroll detail panel up to reveal map while scrubbing
-    var dp=document.getElementById('detailPanel');
-    if(dp && window.innerWidth < 768){ dp._savedScroll=dp.scrollTop; dp.scrollTop=0; }
+    if(e.touches[0]) onElevMove(e.touches[0].clientX);
+    // On mobile: collapse panel to half so map is visible above
+    if(window.innerWidth < 768){
+      var dp=document.getElementById('detailPanel');
+      if(dp){ dp._prevClass=dp.className; dp.classList.add('elev-scrub'); }
+    }
   },{passive:true});
-  svg.addEventListener('touchmove',function(e){e.preventDefault();if(e.touches[0])onElevMove(e.touches[0].clientX);},{passive:false});
+  svg.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(e.touches[0]) onElevMove(e.touches[0].clientX);
+  },{passive:false});
   svg.addEventListener('touchend',function(){
     onElevLeave();
-    // Restore scroll position
-    var dp=document.getElementById('detailPanel');
-    if(dp && dp._savedScroll!==undefined){ setTimeout(function(){dp.scrollTop=dp._savedScroll;},300); }
+    // Restore panel to previous position
+    if(window.innerWidth < 768){
+      var dp=document.getElementById('detailPanel');
+      if(dp){ dp.classList.remove('elev-scrub'); }
+    }
+  });
+  svg.addEventListener('touchcancel',function(){
+    onElevLeave();
+    if(window.innerWidth < 768){
+      var dp=document.getElementById('detailPanel');
+      if(dp){ dp.classList.remove('elev-scrub'); }
+    }
   });
 }
 
