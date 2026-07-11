@@ -395,7 +395,7 @@
   </div>
 
   <!-- Full detail (scrollable) -->
-  <div class="detail-scroll">
+  <div class="detail-scroll" id="detailScroll">
     <div class="detail-body">
       <div class="detail-aonb"   id="dAonbLabel"></div>
       <div class="detail-name"   id="dName"></div>
@@ -1164,7 +1164,7 @@ function locateOnDetail(){if(map&&userLat!==null)map.setView([userLat,userLng],1
 
 // ── SHEET ──────────────────────────────────────────────────────────────────
 function ts(e){touchStartY=e.touches[0].clientY;}
-function tm(e){var dy=e.touches[0].clientY-touchStartY;if(dy>60&&sheetState==='full'){sheetState='half';us();}else if(dy>60&&sheetState==='half'){sheetState='peek';us();}else if(dy<-60&&sheetState==='peek'){sheetState='half';us();}else if(dy<-60&&sheetState==='half'){sheetState='full';us();}}
+function tm(e){var dy=e.touches[0].clientY-touchStartY;if(dy>60&&sheetState==='full'){sheetState='half';us();}else if(dy>60&&sheetState==='half'){sheetState='peek';us();}else if(dy<-60&&sheetState==='peek'){sheetState='half';us();}else if(dy<-60&&sheetState==='half'){sheetState='full';us(); var dScroll2=document.getElementById('detailScroll'); if(dScroll2) dScroll2.scrollTop=0;}}
 function toggleSheet(){sheetState=sheetState==='peek'?'half':sheetState==='half'?'full':'peek';us();}
 function us(){document.getElementById('sheet').className='sheet '+sheetState;}
 
@@ -1330,6 +1330,9 @@ function openDetail(id){
   if(fb)fb.classList.add('hidden');
   if(tb)tb.classList.add('detail-active');
 
+  // Always reset scroll to top when opening a route
+  var dScroll = document.getElementById('detailScroll');
+  if(dScroll) dScroll.scrollTop = 0;
   plotMain(r);
   drawPubs(r.id);
   // Fetch weather and elevation for this route
@@ -1670,6 +1673,11 @@ function drawElevationChart(el, elevs, pts) {
   svg.addEventListener('touchstart',function(e){
     if(window.innerWidth >= 768){ return; } // desktop handles via mouse
     e.preventDefault();
+    // Fit map to show full route so red dot is always visible
+    if(map && pts && pts.length > 1){
+      var latLngs = pts.map(function(p){ return [p.lat, p.lng]; });
+      map.fitBounds(L.latLngBounds(latLngs), {padding:[20,20], maxZoom:14, animate:true, duration:0.3});
+    }
 
     // Build fixed overlay with a clone of the SVG
     var overlay=document.getElementById('elvOverlay');
@@ -2021,6 +2029,8 @@ var PUB_DATA = {
   ,
     {lat:50.8644,lng:0.582,name:"Rock-a-Nore Kitchen",address:"23a Rock-a-Nore Road, Hastings TN34 3DW",type:"cafe",rating:"4.5★",desc:"One of the finest fish restaurants in the South East. The catch lands on the beach outside each morning. Featured in The Good Food Guide. Essential booking.",google:"4.5",source:"Google"},
     {lat:50.87,lng:0.59,name:"Judges Bakery, Hastings",address:"51 High Street, Hastings Old Town TN34 3EN",type:"cafe",rating:"4.2★",desc:"One of Britain\'s oldest bakeries — founded 1826, bicentennial 2026. Exceptional sourdough, sausage rolls and sandwiches in Hastings Old Town.",google:"4.2",source:"Google"}
+  ,
+    {lat:50.8644,lng:0.612,name:"Hastings Fishing Beach — Fresh daily catch",address:"",type:"delicacy",rating:"Local delicacy",desc:"Hastings has the largest beach-launched fishing fleet in Europe. The boats go out at night and return each morning with the catch — sea bass, Dover sole, plaice, mackerel, herring and lobster. You can buy direct from the fishermen on the Stade. The Rock-a-Nore Kitchen uses this catch daily.",google:"",source:""}
   ],
   14: [ // Chesham to Great Missenden
     {lat:51.7051,lng:-0.6112,name:"The Queen's Head, Chesham",address:"Church Street, Chesham HP5 1HH",website:"",type:"pub",rating:"4.1★",desc:"A traditional town-centre pub near the station, good for pre-walk preparation. Real ales and friendly service.",google:"4.1",source:"Google"},
@@ -2054,28 +2064,30 @@ var PUB_DATA = {
   
   ],
   22: [ // Cromer to Sheringham
-    {lat:52.9326,lng:1.3004,name:"The Red Lion, Cromer",address:"Brook Street, Cromer NR27 9HD",type:"pub",rating:"4.2★",desc:"A traditional flint-built pub in Cromer near the pier. Great start with local ales and fresh crab.",google:"4.2",source:"Google"},
-    {lat:52.9428,lng:1.2161,name:"The Lobster, Sheringham",address:"High Street, Sheringham NR26 8JP",type:"pub",rating:"4.3★",desc:"A proper seaside pub in Sheringham. Famous for local crab and lobster. Perfect end-of-walk destination.",google:"4.3",source:"Google"},
-    {lat:52.9326,lng:1.3004,name:"Cromer seafront public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Cromer seafront.",google:"",source:""},
-    {lat:52.9428,lng:1.2161,name:"Sheringham seafront toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Sheringham seafront.",google:"",source:""}
+    {lat:52.9326000,lng:1.2999000,name:"The Red Lion, Cromer",address:"Brook Street, Cromer NR27 9HD",type:"pub",rating:"4.2★",desc:"A traditional flint-built pub in Cromer near the pier. Great start with local ales and fresh crab.",google:"4.2",source:"Google"},
+    {lat:52.9428000,lng:1.2156000,name:"The Lobster, Sheringham",address:"High Street, Sheringham NR26 8JP",type:"pub",rating:"4.3★",desc:"A proper seaside pub in Sheringham. Famous for local crab and lobster. Perfect end-of-walk destination.",google:"4.3",source:"Google"},
+    {lat:52.9330000,lng:1.3004000,name:"Cromer seafront public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Cromer seafront.",google:"",source:""},
+    {lat:52.9432000,lng:1.2161000,name:"Sheringham seafront toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Sheringham seafront.",google:"",source:""}
   
   
   ,
-    {lat:52.9326,lng:1.3004,name:"No 1 Cromer",address:"New Street, Cromer NR27 9HP",type:"cafe",rating:"4.6★",desc:"Voted top 5 fish and chips in the UK 2026, AA 2 Rosette. Run by Galton Blackiston. Sea views upstairs, takeaway downstairs. The Cromer crab is extraordinary.",google:"4.6",source:"Google"}
+    {lat:52.9326000,lng:1.3009000,name:"No 1 Cromer",address:"New Street, Cromer NR27 9HP",type:"cafe",rating:"4.6★",desc:"Voted top 5 fish and chips in the UK 2026, AA 2 Rosette. Run by Galton Blackiston. Sea views upstairs, takeaway downstairs. The Cromer crab is extraordinary.",google:"4.6",source:"Google"}
+  ,
+    {lat:52.9326,lng:1.3001,name:"Cromer Crab — Get it fresh here",address:"",type:"delicacy",rating:"Local delicacy",desc:"Cromer crab is world-famous — a small, sweet, dense crab caught from the chalk reef offshore. Unlike large supermarket crabs, Cromer crabs are sold live or freshly dressed from the beach huts on the seafront. No 1 Cromer serves the finest preparation. In season: April to October.",google:"",source:""}
   ],
   24: [ // Nunwell Trail IOW
-    {lat:50.6569,lng:-1.1617,name:"The Bulls Head, Brading",address:"High Street, Brading PO36 0DJ",type:"pub",rating:"4.1★",desc:"A traditional pub in historic Brading village at the start of the Nunwell Trail.",google:"4.1",source:"Google"},
-    {lat:50.6516,lng:-1.1548,name:"The Caulkheads, Sandown",address:"High Street, Sandown PO36 8JJ",type:"pub",rating:"4.0★",desc:"A welcoming pub in Sandown at the end of the Nunwell Trail. Perfect for post-walk refreshments.",google:"4.0",source:"Google"},
+    {lat:50.6569000,lng:-1.1622000,name:"The Bulls Head, Brading",address:"High Street, Brading PO36 0DJ",type:"pub",rating:"4.1★",desc:"A traditional pub in historic Brading village at the start of the Nunwell Trail.",google:"4.1",source:"Google"},
+    {lat:50.6516000,lng:-1.1553000,name:"The Caulkheads, Sandown",address:"High Street, Sandown PO36 8JJ",type:"pub",rating:"4.0★",desc:"A welcoming pub in Sandown at the end of the Nunwell Trail. Perfect for post-walk refreshments.",google:"4.0",source:"Google"},
     {lat:50.6700,lng:-1.1500,name:"The Yarbridge Inn, Brading",address:"Yarbridge, Brading PO36 0AA",type:"pub",rating:"4.0★",desc:"A friendly pub close to the Nunwell Trail near Brading marshes.",google:"4.0",source:"Google"}
   
   
   
   ],
   26: [ // Swanage to Corfe Castle
-    {lat:50.6102,lng:-1.9574,name:"The Red Lion, Swanage",address:"High Street, Swanage BH19 2LT",type:"pub",rating:"4.2★",desc:"A traditional stone pub in Swanage, ideal for starting the walk to Corfe Castle.",google:"4.2",source:"Google"},
-    {lat:50.6386,lng:-2.0569,name:"The Greyhound Inn, Corfe Castle",address:"The Square, Corfe Castle BH20 5EZ",type:"pub",rating:"4.4★",desc:"A magnificent 16th-century pub in the shadow of Corfe Castle ruins. Arguably the finest pub view in Dorset.",google:"4.4",source:"Google"},
-    {lat:50.6250,lng:-2.0000,name:"The Bankes Arms, Studland",address:"Manor Road, Studland BH19 3AU",type:"pub",rating:"4.3★",desc:"A friendly National Trust pub on the Studland peninsula with views over the bay.",google:"4.3",source:"Google"},
-    {lat:50.6386,lng:-2.0569,name:"Corfe Castle village toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Corfe Castle village.",google:"",source:""}
+    {lat:50.6102000,lng:-1.9579000,name:"The Red Lion, Swanage",address:"High Street, Swanage BH19 2LT",type:"pub",rating:"4.2★",desc:"A traditional stone pub in Swanage, ideal for starting the walk to Corfe Castle.",google:"4.2",source:"Google"},
+    {lat:50.6386000,lng:-2.0574000,name:"The Greyhound Inn, Corfe Castle",address:"The Square, Corfe Castle BH20 5EZ",type:"pub",rating:"4.4★",desc:"A magnificent 16th-century pub in the shadow of Corfe Castle ruins. Arguably the finest pub view in Dorset.",google:"4.4",source:"Google"},
+    {lat:50.6250000,lng:-2.0005000,name:"The Bankes Arms, Studland",address:"Manor Road, Studland BH19 3AU",type:"pub",rating:"4.3★",desc:"A friendly National Trust pub on the Studland peninsula with views over the bay.",google:"4.3",source:"Google"},
+    {lat:50.6390000,lng:-2.0569000,name:"Corfe Castle village toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Corfe Castle village.",google:"",source:""}
   
   
   
@@ -2085,9 +2097,11 @@ var PUB_DATA = {
     {lat:50.6093107,lng:-1.957718,name:"The Salt Pig Too, Swanage",address:"Institute Road, Swanage BH19 1BU",type:"cafe",rating:"4.4★",desc:"The popular Swanage outpost of the acclaimed Salt Pig charcuterie. Outstanding sandwiches, deli boards and coffee using the finest local and cured meats and cheeses.",google:"4.4",source:"Google"},
     {lat:50.6088889,lng:-1.9572222,name:"The Italian Bakery, Swanage",address:"Station Road, Swanage BH19 1AB",type:"cafe",rating:"4.5★",desc:"An excellent artisan Italian bakery in Swanage town centre. Superb focaccia, pastries, proper espresso and homemade pasta dishes. One of the best places to eat in Swanage.",google:"4.5",source:"Google"},
     {lat:50.6090494,lng:-1.9569461,name:"The Cornish Bakery, Swanage",address:"High Street, Swanage BH19 2LJ",type:"cafe",rating:"4.3★",desc:"A branch of the well-known Cornish Bakery chain in Swanage town centre. Freshly baked pasties, sausage rolls and good coffee. Reliable and convenient near the walk end.",google:"4.3",source:"Google"}
+  ,
+    {lat:50.6388,lng:-2.0568,name:"Corfe Castle — Dorset Blue Vinny Cheese",address:"",type:"delicacy",rating:"Local delicacy",desc:"Dorset Blue Vinny is one of England\'s rarest cheeses — a crumbly, sharp blue cheese made from skimmed cow\'s milk, unique to Dorset. For centuries it was nearly extinct; now made exclusively by Woodbridge Farm in Stock Gaylard, Dorset. Look for it in Corfe Castle village shops and The Greyhound Inn.",google:"",source:""}
   ],
   27: [ // Studland to Swanage
-    {lat:50.6440,lng:-1.9462,name:"The Bankes Arms, Studland",address:"Manor Road, Studland BH19 3AU",type:"pub",rating:"4.3★",desc:"A friendly National Trust pub at the start of the walk with wonderful views over Studland Bay. Perfect for pre-walk food and ales.",google:"4.3",source:"Google"},
+    {lat:50.6440000,lng:-1.9467000,name:"The Bankes Arms, Studland",address:"Manor Road, Studland BH19 3AU",type:"pub",rating:"4.3★",desc:"A friendly National Trust pub at the start of the walk with wonderful views over Studland Bay. Perfect for pre-walk food and ales.",google:"4.3",source:"Google"},
     {lat:50.6096,lng:-1.9580,name:"The Red Lion, Swanage",address:"High Street, Swanage BH19 2LT",type:"pub",rating:"4.2★",desc:"A welcoming traditional pub in Swanage town centre near the seafront. Perfect for refreshments after the coastal walk from Studland.",google:"4.2",source:"Google"},
     {lat:50.6096,lng:-1.9630,name:"The White Swan, Swanage",address:"1 High Street, Swanage BH19 2LJ",type:"pub",rating:"4.2★",desc:"A friendly town-centre pub in Swanage at the end of the coastal walk. Good ales and a warm welcome for walkers.",google:"4.2",source:"Google"},
     {lat:50.6440,lng:-1.9520,name:"Knoll Beach NT toilets, Studland",address:"",type:"toilets",rating:"",desc:"National Trust public toilets at Knoll Beach car park.",google:"",source:""},
@@ -2101,37 +2115,41 @@ var PUB_DATA = {
     {lat:50.6093107,lng:-1.957718,name:"The Salt Pig Too, Swanage",address:"Institute Road, Swanage BH19 1BU",type:"cafe",rating:"4.4★",desc:"The popular Swanage outpost of the acclaimed Salt Pig charcuterie. Outstanding sandwiches, deli boards and coffee using the finest local and cured meats and cheeses.",google:"4.4",source:"Google"},
     {lat:50.6088889,lng:-1.9572222,name:"The Italian Bakery, Swanage",address:"Station Road, Swanage BH19 1AB",type:"cafe",rating:"4.5★",desc:"An excellent artisan Italian bakery in Swanage town centre. Superb focaccia, pastries, proper espresso and homemade pasta dishes. One of the best places to eat in Swanage.",google:"4.5",source:"Google"},
     {lat:50.6090494,lng:-1.9569461,name:"The Cornish Bakery, Swanage",address:"High Street, Swanage BH19 2LJ",type:"cafe",rating:"4.3★",desc:"A branch of the well-known Cornish Bakery chain in Swanage town centre. Freshly baked pasties, sausage rolls and good coffee. Reliable and convenient near the walk end.",google:"4.3",source:"Google"}
+  ,
+    {lat:50.644,lng:-1.946,name:"Studland & Purbeck — Dorset Lobster & Crab",address:"",type:"delicacy",rating:"Local delicacy",desc:"The waters off Studland and Purbeck produce some of the finest lobster and crab in England — the rocky chalk reef around Old Harry Rocks is particularly rich. Local fishermen sell direct from Swanage harbour. Purbeck Ice Cream (made locally from Dorset dairy herds) is another local speciality.",google:"",source:""}
   ],
   28: [ // Hastings Country Park,
     {lat:50.8700,lng:0.6200,name:"The Dolphin Inn, Rock-a-Nore",address:"Rock-a-Nore Road, Hastings TN34 3DW",type:"pub",rating:"4.1★",desc:"A traditional fishermen pub on the Stade beach near the start of the Country Park walk.",google:"4.1",source:"Google"},
-    {lat:50.8644,lng:0.6126,name:"Rock-a-Nore public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Rock-a-Nore car park.",google:"",source:""}
+    {lat:50.8648000,lng:0.6126000,name:"Rock-a-Nore public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Rock-a-Nore car park.",google:"",source:""}
   
   
   ,
     {lat:50.8644,lng:0.582,name:"Rock-a-Nore Kitchen",address:"23a Rock-a-Nore Road, Hastings TN34 3DW",type:"cafe",rating:"4.5★",desc:"Outstanding fish restaurant in a fisherman\'s hut opposite the Hastings beach fleet. Daily catch straight off the boats. Sit-down and fish and chip takeaway.",google:"4.5",source:"Google"},
     {lat:50.87,lng:0.59,name:"Judges Bakery, Hastings",address:"51 High Street, Hastings Old Town TN34 3EN",type:"cafe",rating:"4.2★",desc:"One of Britain\'s oldest bakeries, founded 1826. Exceptional artisan sourdough, pastries and sandwiches near the Country Park start.",google:"4.2",source:"Google"}
+  ,
+    {lat:50.8644,lng:0.612,name:"Hastings Fishing Beach — Fresh daily catch",address:"",type:"delicacy",rating:"Local delicacy",desc:"Hastings has the largest beach-launched fishing fleet in Europe. The boats return each morning with sea bass, Dover sole, plaice, mackerel and lobster. Buy direct from the fishermen on the Stade. The Rock-a-Nore Kitchen uses this same catch.",google:"",source:""}
   ],
   29: [ // Waltham Abbey
-    {lat:51.6883,lng:-0.0042,name:"The Waltham Arms",address:"Market Square, Waltham Abbey EN9 1DU",type:"pub",rating:"4.0★",desc:"A traditional pub in Waltham Abbey town centre near the historic abbey.",google:"4.0",source:"Google"},
+    {lat:51.6883000,lng:-0.0047000,name:"The Waltham Arms",address:"Market Square, Waltham Abbey EN9 1DU",type:"pub",rating:"4.0★",desc:"A traditional pub in Waltham Abbey town centre near the historic abbey.",google:"4.0",source:"Google"},
     {lat:51.6900,lng:-0.0100,name:"The Welsh Harp, Waltham Abbey",address:"Market Square, Waltham Abbey EN9 1DZ",type:"pub",rating:"4.1★",desc:"A welcoming town-centre pub near the abbey with good ales and classic pub food.",google:"4.1",source:"Google"},
     {lat:51.7000,lng:0.0100,name:"The Boat House, Lee Valley",address:"Lea Valley Road EN9 1SB",type:"pub",rating:"4.2★",desc:"A waterside pub on the River Lee Navigation with riverside terrace.",google:"4.2",source:"Google"},
-    {lat:51.6883,lng:-0.0042,name:"Waltham Abbey market square toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Waltham Abbey market square.",google:"",source:""}
+    {lat:51.6887000,lng:-0.0042000,name:"Waltham Abbey market square toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Waltham Abbey market square.",google:"",source:""}
   
   
   ],
   30: [ // Eastbourne to Beachy Head
-    {lat:50.7683,lng:0.2842,name:"The Pilot Inn, Eastbourne",address:"89 South Street, Eastbourne BN21 4LR",type:"pub",rating:"4.2★",desc:"A classic pub near Eastbourne seafront, ideal for pre-walk preparation.",google:"4.2",source:"Google"},
+    {lat:50.7683000,lng:0.2837000,name:"The Pilot Inn, Eastbourne",address:"89 South Street, Eastbourne BN21 4LR",type:"pub",rating:"4.2★",desc:"A classic pub near Eastbourne seafront, ideal for pre-walk preparation.",google:"4.2",source:"Google"},
     {lat:50.7490,lng:0.2420,name:"Beachy Head Pub",address:"Beachy Head Road, Eastbourne BN20 7YA",type:"pub",rating:"4.1★",desc:"The only pub at the top of Beachy Head with dramatic clifftop views. A unique mid-walk stop.",google:"4.1",source:"Google"},
-    {lat:50.7600,lng:0.2600,name:"The Meads Village Bar",address:"Meads Street, Eastbourne BN20 7QT",type:"pub",rating:"4.3★",desc:"A lovely pub in pretty Meads village, passed on the return from Beachy Head.",google:"4.3",source:"Google"},
-    {lat:50.7683,lng:0.2842,name:"Eastbourne seafront public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Eastbourne seafront near the pier.",google:"",source:""}
+    {lat:50.7600000,lng:0.2595000,name:"The Meads Village Bar",address:"Meads Street, Eastbourne BN20 7QT",type:"pub",rating:"4.3★",desc:"A lovely pub in pretty Meads village, passed on the return from Beachy Head.",google:"4.3",source:"Google"},
+    {lat:50.7687000,lng:0.2842000,name:"Eastbourne seafront public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Eastbourne seafront near the pier.",google:"",source:""}
   
   
   ,
-    {lat:50.7683,lng:0.2842,name:"Fusciardi's Ice Cream Parlour",address:"30 Marine Parade, Eastbourne BN22 7AY",type:"cafe",rating:"4.3★",desc:"An Eastbourne legend since 1967 — award-winning Italian gelato on the seafront. 18 flavours, 24 sundaes, breakfasts and lunches.",google:"4.3",source:"Google"},
+    {lat:50.7683000,lng:0.2847000,name:"Fusciardi's Ice Cream Parlour",address:"30 Marine Parade, Eastbourne BN22 7AY",type:"cafe",rating:"4.3★",desc:"An Eastbourne legend since 1967 — award-winning Italian gelato on the seafront. 18 flavours, 24 sundaes, breakfasts and lunches.",google:"4.3",source:"Google"},
     {lat:50.749,lng:0.2017,name:"Birling Gap Cafe, NT",address:"Birling Gap, East Dean BN20 0AB",type:"cafe",rating:"4.1★",desc:"A National Trust cafe on the clifftop at Birling Gap open daily. Hot food, drinks and cakes with dramatic views. Useful mid-walk stop.",google:"4.1",source:"Google"}
   ],
   32: [ // Eridge
-    {lat:51.0891,lng:0.2013,name:"The Nevill Crest and Gun, Eridge",address:"Eridge Road, Eridge TN3 9JR",type:"pub",rating:"4.4★",desc:"A beautiful old coaching inn right next to Eridge station. Excellent food, lovely garden.",google:"4.4",source:"Google"},
+    {lat:51.0891000,lng:0.2008000,name:"The Nevill Crest and Gun, Eridge",address:"Eridge Road, Eridge TN3 9JR",type:"pub",rating:"4.4★",desc:"A beautiful old coaching inn right next to Eridge station. Excellent food, lovely garden.",google:"4.4",source:"Google"},
     {lat:51.1100,lng:0.2400,name:"The Bald Faced Stag, Frant",address:"High Street, Frant TN3 9DW",type:"pub",rating:"4.3★",desc:"A charming village pub in picturesque Frant on the edge of the High Weald.",google:"4.3",source:"Google"},
     {lat:51.0940,lng:0.2400,name:"The Abergavenny Arms, Frant",address:"The Green, Frant TN3 9DZ",type:"pub",rating:"4.3★",desc:"A beautiful village pub on the green in Frant, directly on the Eridge circular walk.",google:"4.3",source:"Google"}
   
@@ -2141,34 +2159,40 @@ var PUB_DATA = {
   36: [ // Dover to Deal
     {lat:51.1280,lng:1.3250,name:"The Blakes of Dover",address:"Castle Street, Dover CT16 1PJ",type:"pub",rating:"4.1★",desc:"A friendly pub in Dover town centre near the castle. Good pre-walk stop.",google:"4.1",source:"Google"},
     {lat:51.1494,lng:1.3862,name:"The Coastguard, St Margarets Bay",address:"St Margarets Bay CT15 6DY",type:"pub",rating:"4.4★",desc:"A superb pub on the beach at St Margarets Bay. Spectacular White Cliffs location.",google:"4.4",source:"Google"},
-    {lat:51.2239,lng:1.4045,name:"The Kings Head, Deal",address:"Beach Street, Deal CT14 6HY",type:"pub",rating:"4.3★",desc:"A classic Deal seafront pub at the end of the White Cliffs walk. Excellent local ales.",google:"4.3",source:"Google"},
-    {lat:51.1196,lng:1.3122,name:"Dover Pencester Gardens toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Dover town centre.",google:"",source:""},
-    {lat:51.2239,lng:1.4045,name:"Deal beach front toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Deal seafront.",google:"",source:""}
+    {lat:51.2239000,lng:1.4040000,name:"The Kings Head, Deal",address:"Beach Street, Deal CT14 6HY",type:"pub",rating:"4.3★",desc:"A classic Deal seafront pub at the end of the White Cliffs walk. Excellent local ales.",google:"4.3",source:"Google"},
+    {lat:51.1200000,lng:1.3122000,name:"Dover Pencester Gardens toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Dover town centre.",google:"",source:""},
+    {lat:51.2243000,lng:1.4045000,name:"Deal beach front toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Deal seafront.",google:"",source:""}
   
   
   ,
     {lat:51.222,lng:1.403,name:"Middle Street Fish Bar, Deal",address:"Middle Street, Deal CT14 7AA",type:"cafe",rating:"4.4★",desc:"The best fish and chips in Deal — a local institution with queues that prove it. Fresh locally caught fish, cash only. Upstairs restaurant for sit-down dining. Perfect end to the White Cliffs walk.",google:"4.4",source:"Google"}
+  ,
+    {lat:51.2239,lng:1.4043,name:"Deal & White Cliffs — Local Catch",address:"",type:"delicacy",rating:"Local delicacy",desc:"Deal has a long fishing tradition. Local boats land Dover sole — the finest flatfish in England, named for this stretch of coast — along with bass, mackerel and whitebait. Middle Street Fish Bar uses locally caught fish. The White Cliffs coastline produces some of the best sea fishing in the UK.",google:"",source:""}
   ],
   37: [ // Sandwich
-    {lat:51.2736,lng:1.3450,name:"The Guildhall Bar, Sandwich",address:"Cattle Market, Sandwich CT13 9AE",type:"pub",rating:"4.2★",desc:"A welcoming bar in a historic building in the centre of Sandwich at the start of the walk.",google:"4.2",source:"Google"},
+    {lat:51.2736000,lng:1.3445000,name:"The Guildhall Bar, Sandwich",address:"Cattle Market, Sandwich CT13 9AE",type:"pub",rating:"4.2★",desc:"A welcoming bar in a historic building in the centre of Sandwich at the start of the walk.",google:"4.2",source:"Google"},
     {lat:51.2700,lng:1.3500,name:"The Bell Hotel, Sandwich",address:"The Quay, Sandwich CT13 9EF",type:"pub",rating:"4.3★",desc:"A beautiful 16th-century coaching inn on the River Stour quay. The most atmospheric pub in town.",google:"4.3",source:"Google"},
     {lat:51.2900,lng:1.3400,name:"The Admiral Owen, Sandwich",address:"Strand Street, Sandwich CT13 9HN",type:"pub",rating:"4.1★",desc:"A friendly pub in the heart of medieval Sandwich close to the town walls.",google:"4.1",source:"Google"},
-    {lat:51.2736,lng:1.3450,name:"Sandwich Guildhall car park toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Sandwich Guildhall car park.",google:"",source:""}
+    {lat:51.2740000,lng:1.3450000,name:"Sandwich Guildhall car park toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Sandwich Guildhall car park.",google:"",source:""}
   
-  
-  
-  ],
-  38: [ // Manningtree, Flatford & Dedham Circular
-    {lat:51.9588,lng:0.9931,name:"The Sun Inn, Dedham",address:"High Street, Dedham CO7 6DF",type:"pub",rating:"4.5★",desc:"One of the finest pubs in Essex. A 15th-century inn in the heart of Constable Country serving exceptional locally sourced food. Right on the route through Dedham village.",google:"4.5",source:"Google"},
-    {lat:51.9490,lng:1.0453,name:"The Thorn Hotel, Mistley",address:"High Street, Mistley CO11 1HJ",type:"pub",rating:"4.2★",desc:"A beautiful Georgian inn right on Mistley quay at the start of the walk, with views over the Stour Estuary. Good ales and excellent local seafood.",google:"4.2",source:"Google"},
-    {lat:51.9490,lng:1.0453,name:"Mistley Quay public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Mistley Quay near the walk start.",google:"",source:""},
-    {lat:51.9588,lng:0.9931,name:"Dedham village public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Dedham village near the car park.",google:"",source:""},
-    {lat:51.9450,lng:1.0100,name:"Flatford NT car park toilets",address:"",type:"toilets",rating:"",desc:"National Trust public toilets at Flatford Mill car park.",google:"",source:""}
   
   
   ,
-    {lat:51.945,lng:1.01,name:"Flatford NT Tea Room",address:"Flatford, East Bergholt CO7 6UL",type:"cafe",rating:"4.2★",desc:"The National Trust tearoom right at Flatford Mill — the setting of The Hay Wain. Homemade cakes, sandwiches, scones and hot drinks beside the famous millpond.",google:"4.2",source:"Google"},
-    {lat:51.9588,lng:0.9931,name:"The Essex Rose Tea House",address:"High Street, Dedham CO7 6DE",type:"cafe",rating:"4.4★",desc:"A 16th-century tearoom run by Tiptree Jam in Dedham village. Traditional table service, cream teas, breakfasts and lunches. One of the finest tearooms in East Anglia.",google:"4.4",source:"Google"}
+    {lat:51.2736,lng:1.3448,name:"Sandwich & Pegwell Bay — Oysters & Samphire",address:"",type:"delicacy",rating:"Local delicacy",desc:"Pegwell Bay has been famous for shrimps and oysters since Roman times — the Romans prized Kentish oysters above all others and exported them to Rome. Native oysters and samphire are still harvested from the bay today. Whitstable (nearby) remains the oyster capital of England.",google:"",source:""}
+  ],
+  38: [ // Manningtree, Flatford & Dedham Circular
+    {lat:51.9588000,lng:0.9926000,name:"The Sun Inn, Dedham",address:"High Street, Dedham CO7 6DF",type:"pub",rating:"4.5★",desc:"One of the finest pubs in Essex. A 15th-century inn in the heart of Constable Country serving exceptional locally sourced food. Right on the route through Dedham village.",google:"4.5",source:"Google"},
+    {lat:51.9490000,lng:1.0448000,name:"The Thorn Hotel, Mistley",address:"High Street, Mistley CO11 1HJ",type:"pub",rating:"4.2★",desc:"A beautiful Georgian inn right on Mistley quay at the start of the walk, with views over the Stour Estuary. Good ales and excellent local seafood.",google:"4.2",source:"Google"},
+    {lat:51.9494000,lng:1.0453000,name:"Mistley Quay public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Mistley Quay near the walk start.",google:"",source:""},
+    {lat:51.9592000,lng:0.9931000,name:"Dedham village public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Dedham village near the car park.",google:"",source:""},
+    {lat:51.9454000,lng:1.0100000,name:"Flatford NT car park toilets",address:"",type:"toilets",rating:"",desc:"National Trust public toilets at Flatford Mill car park.",google:"",source:""}
+  
+  
+  ,
+    {lat:51.9450000,lng:1.0105000,name:"Flatford NT Tea Room",address:"Flatford, East Bergholt CO7 6UL",type:"cafe",rating:"4.2★",desc:"The National Trust tearoom right at Flatford Mill — the setting of The Hay Wain. Homemade cakes, sandwiches, scones and hot drinks beside the famous millpond.",google:"4.2",source:"Google"},
+    {lat:51.9588000,lng:0.9936000,name:"The Essex Rose Tea House",address:"High Street, Dedham CO7 6DE",type:"cafe",rating:"4.4★",desc:"A 16th-century tearoom run by Tiptree Jam in Dedham village. Traditional table service, cream teas, breakfasts and lunches. One of the finest tearooms in East Anglia.",google:"4.4",source:"Google"}
+  ,
+    {lat:51.9588,lng:0.9929,name:"Dedham Vale — Tiptree Jam & Essex Produce",address:"",type:"delicacy",rating:"Local delicacy",desc:"Tiptree (Wilkin & Sons) has made jam in Essex since 1885 and is one of Britain\'s most celebrated food producers. Their Little Scarlet strawberry jam — made from a rare variety grown only in Essex — is served at the Savoy and Windsor Castle. The Essex Rose Tea House in Dedham is run by Tiptree and serves their produce.",google:"",source:""}
   ]
 };
 
@@ -2185,10 +2209,11 @@ function drawPubs(routeId) {
   pubs.forEach(function(p) {
     var isPub = p.type === 'pub';
     var isToilets = p.type === 'toilets';
-    var bgColor = isToilets ? '#dce8f5' : (isPub ? '#f5e6c0' : '#e8f0e8');
-    var borderColor = isToilets ? '#3a6a9a' : (isPub ? '#c08030' : '#2d7a27');
-    var markerEmoji = isToilets ? '🚻' : (isPub ? '🍺' : '☕');
-    var markerSize = isToilets ? 26 : 32;
+    var bgColor = isToilets ? '#dce8f5' : (isDelicacy ? '#fff0e8' : (isPub ? '#f5e6c0' : '#e8f0e8'));
+    var borderColor = isToilets ? '#3a6a9a' : (isDelicacy ? '#c05a00' : (isPub ? '#c08030' : '#2d7a27'));
+    var isDelicacy = p.type === 'delicacy';
+    var markerEmoji = isToilets ? '🚻' : (isDelicacy ? '🍽️' : (isPub ? '🍺' : '☕'));
+    var markerSize = isToilets ? 26 : (isDelicacy ? 32 : 32);
     var icon = L.divIcon({
       className: '',
       html: '<div style="width:'+markerSize+'px;height:'+markerSize+'px;border-radius:50%;background:'+bgColor+';border:2px solid '+borderColor+';box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:'+(isToilets?13:15)+'px;">'+markerEmoji+'</div>',
@@ -2197,7 +2222,7 @@ function drawPubs(routeId) {
     var mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(p.name + ', ' + (p.address||''));
     var mapsLink = '<a href="' + mapsUrl + '" target="_blank" style="display:inline-block;margin-top:6px;padding:4px 10px;background:#1a3a7a;color:#fff;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none">📍 Google Maps</a>';
     var popup = '<div class="pub-popup">' +
-      '<div class="pub-popup-type">' + (isPub ? '🍺 Pub' : '☕ Café') + '</div>' +
+      '<div class="pub-popup-type">' + (isDelicacy ? '🍽️ Local delicacy' : (isPub ? '🍺 Pub' : (isToilets ? '🚻 Toilets' : '☕ Café'))) + '</div>' +
       '<div class="pub-popup-name" style="font-weight:700;font-size:14px;margin-bottom:4px;">' + p.name + '</div>' +
       '<div class="pub-popup-rating">★ ' + p.rating + ' · ' + p.source + '</div>' +
       '<div class="pub-popup-desc">' + p.desc + '</div>' +
