@@ -163,6 +163,22 @@
   .dstat-val { font-size: 15px; font-weight: 700; color: #1a1a18; }
   .dstat-lbl { font-size: 9px; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
   .weather-card { margin: 0 0 16px 0; }
+  .pubs-toggle-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: #f4f2ee; border: 2px solid #e8e6e0;
+    border-radius: 10px; padding: 9px 14px;
+    font-size: 13px; font-weight: 600; color: #4a4a45;
+    cursor: pointer; width: 100%; margin: 0 0 12px 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pubs-toggle-btn.active {
+    background: #e8f0e8; border-color: #2d5a27; color: #2d5a27;
+  }
+  .pubs-toggle-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #c8c6c0; flex-shrink: 0; transition: background 0.15s;
+  }
+  .pubs-toggle-btn.active .pubs-toggle-dot { background: #2d5a27; }
   .weather-loading { font-size: 12px; color: #9b9b97; padding: 8px 0; }
   .weather-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 8px; }
   .weather-day { background: #f7f6f3; border-radius: 10px; padding: 8px 4px; text-align: center; }
@@ -408,6 +424,10 @@
         <div class="dstat"><div class="dstat-val" id="dTime"></div><div class="dstat-lbl">Time</div></div>
         <div class="dstat"><div class="dstat-val" id="dDiff"></div><div class="dstat-lbl">Grade</div></div>
       </div>
+      <button id="pubsToggleBtn" class="pubs-toggle-btn" onclick="togglePubsLayer()">
+        <span class="pubs-toggle-dot"></span>
+        <span>Show pubs, cafés &amp; toilets</span>
+      </button>
       <div id="dWeather" class="weather-card"></div>
       <div id="dElevation" class="elevation-card"></div>
       <div class="section-title">About this walk</div>
@@ -1035,27 +1055,7 @@ var ROUTES = [
     ],
     waypoints:[{"lat":50.7669297,"lng":0.2922765},{"lat":50.7631481,"lng":0.2879074},{"lat":50.7605701,"lng":0.2863632},{"lat":50.7581667,"lng":0.2805027},{"lat":50.7559433,"lng":0.2769202},{"lat":50.7533909,"lng":0.2717625},{"lat":50.7531221,"lng":0.2694099},{"lat":50.7518143,"lng":0.2672906},{"lat":50.7497979,"lng":0.2669093},{"lat":50.7470372,"lng":0.2654996},{"lat":50.7427791,"lng":0.2624582},{"lat":50.7400403,"lng":0.2599160},{"lat":50.7389854,"lng":0.2586602},{"lat":50.7390464,"lng":0.2532061},{"lat":50.7378432,"lng":0.2503133},{"lat":50.7381402,"lng":0.2489102},{"lat":50.7390344,"lng":0.2515046},{"lat":50.7396222,"lng":0.2536591},{"lat":50.7413649,"lng":0.2542392},{"lat":50.7430213,"lng":0.2569415},{"lat":50.7447965,"lng":0.2581612},{"lat":50.7464960,"lng":0.2563295},{"lat":50.7474950,"lng":0.2581498},{"lat":50.7503951,"lng":0.2639609},{"lat":50.7517845,"lng":0.2665094},{"lat":50.7530633,"lng":0.2701160},{"lat":50.7542127,"lng":0.2734330},{"lat":50.7570713,"lng":0.2790312},{"lat":50.7601375,"lng":0.2854912},{"lat":50.7613579,"lng":0.2874653},{"lat":50.7638095,"lng":0.2885780},{"lat":50.7668329,"lng":0.2926263}]
   },
-  {
-    id:32, name:"Eridge & Ashdown Forest",
-    aonb:"high-weald", aonbLabel:"High Weald AONB",
-    region:"Eridge, East Sussex",
-    difficulty:"hard", miles:"13.0", elevationM:"280", hours:"5.5–6.5",
-    transport:"train",
-    train:{station:"Eridge",stationLat:51.0891,stationLng:0.2013,line:"Southeastern · London Bridge",walkMins:3},
-    trainEnd:null,
-    bus:null, isNationalRail:true, gpxSource:"uploaded",
-    description:"A challenging circular walk from Eridge station through the heart of the High Weald and the edge of Ashdown Forest — the ancient hunting forest that inspired A.A. Milne\'s Hundred Acre Wood. The route passes through deep ancient woodland across heathland ridges and through the historic parkland of Eridge Park.",
-    highlights:["Ashdown Forest","Pooh Sticks Bridge area","Eridge Park","High Weald woodland","Heathland views"],
-    tags:["High Weald","Woodland","Ashdown Forest","Challenging","Winnie the Pooh"],
-    highlightMarkers:[
-      {lat:51.0891,lng:0.2013,name:"Eridge Station",icon:"🚂",history:"One of the most attractive rural stations in the South East with original Victorian buildings intact. The access point for some of the finest walking in the High Weald, connecting to Tonbridge and London Bridge."},
-      {lat:51.1,lng:0.22,name:"Eridge Park",icon:"🌳",history:"A great estate mentioned in Domesday Book, with ancient woodland and veteran oaks estimated at over 500 years old. The Marquess of Abergavenny\'s estate has been here since Norman times."},
-      {lat:51.11,lng:0.25,name:"Ashdown Forest Edge",icon:"🌿",history:"The southern edge of Ashdown Forest — A.A. Milne\'s Hundred Acre Wood. 6,500 acres of ancient High Weald hunting forest, an SSSI and Special Area of Conservation."},
-      {lat:51.115,lng:0.26,name:"Harrison's Rocks",icon:"🧗",history:"Dramatic outcrops of Ardingly sandstone rising 10 metres from the forest floor, formed 130 million years ago. A famous rock-climbing training ground with extraordinary geological sculptures."},
-      {lat:51.1063,lng:0.1808,name:"High Weald Ghylls",icon:"🌿",history:"The deep wooded ravines of the High Weald are unique to this landscape — carved by streams through sandstone. They shelter rare mosses, liverworts and ferns."}
-    ],
-    waypoints:[{"lat":51.0890960,"lng":0.2013270},{"lat":51.0889670,"lng":0.2016690},{"lat":51.0885680,"lng":0.2013100},{"lat":51.0888180,"lng":0.1998590},{"lat":51.0895580,"lng":0.1978320},{"lat":51.0895770,"lng":0.1973330},{"lat":51.0893970,"lng":0.1970110},{"lat":51.0891170,"lng":0.1968620},{"lat":51.0888080,"lng":0.1961740},{"lat":51.0880630,"lng":0.1957920},{"lat":51.0835850,"lng":0.1922000},{"lat":51.0828640,"lng":0.1909480},{"lat":51.0825650,"lng":0.1896100},{"lat":51.0821850,"lng":0.1891140},{"lat":51.0826530,"lng":0.1884120},{"lat":51.0832980,"lng":0.1879830},{"lat":51.0835060,"lng":0.1874850},{"lat":51.0852580,"lng":0.1866340},{"lat":51.0866380,"lng":0.1850450},{"lat":51.0877680,"lng":0.1851220},{"lat":51.0885460,"lng":0.1841880},{"lat":51.0894960,"lng":0.1821650},{"lat":51.0904080,"lng":0.1794290},{"lat":51.0905930,"lng":0.1792020},{"lat":51.0912980,"lng":0.1774470},{"lat":51.0920560,"lng":0.1748350},{"lat":51.0925070,"lng":0.1723860},{"lat":51.0932270,"lng":0.1718250},{"lat":51.0937760,"lng":0.1708190},{"lat":51.0940180,"lng":0.1707520},{"lat":51.0946180,"lng":0.1702430},{"lat":51.0949330,"lng":0.1697620},{"lat":51.0952060,"lng":0.1699370},{"lat":51.0956670,"lng":0.1689560},{"lat":51.0966880,"lng":0.1671950},{"lat":51.0975760,"lng":0.1691660},{"lat":51.0977130,"lng":0.1701120},{"lat":51.0997560,"lng":0.1733550},{"lat":51.1000870,"lng":0.1735480},{"lat":51.1006960,"lng":0.1743680},{"lat":51.1009180,"lng":0.1741820},{"lat":51.1023460,"lng":0.1762290},{"lat":51.1034180,"lng":0.1774470},{"lat":51.1045730,"lng":0.1790320},{"lat":51.1063070,"lng":0.1807570},{"lat":51.1065280,"lng":0.1811850},{"lat":51.1070680,"lng":0.1828120},{"lat":51.1078080,"lng":0.1822500},{"lat":51.1087170,"lng":0.1819820},{"lat":51.1102780,"lng":0.1826290},{"lat":51.1103430,"lng":0.1828720},{"lat":51.1100560,"lng":0.1846950},{"lat":51.1101570,"lng":0.1851960},{"lat":51.1106370,"lng":0.1855460},{"lat":51.1123630,"lng":0.1859420},{"lat":51.1122880,"lng":0.1862220},{"lat":51.1128270,"lng":0.1881930},{"lat":51.1146470,"lng":0.1856810},{"lat":51.1154770,"lng":0.1852520},{"lat":51.1159080,"lng":0.1852740},{"lat":51.1166280,"lng":0.1855130},{"lat":51.1177330,"lng":0.1852720},{"lat":51.1180780,"lng":0.1854020},{"lat":51.1182460,"lng":0.1852290},{"lat":51.1178080,"lng":0.1877530},{"lat":51.1172560,"lng":0.1880490},{"lat":51.1172380,"lng":0.1883620},{"lat":51.1169380,"lng":0.1887160},{"lat":51.1168960,"lng":0.1897690},{"lat":51.1167460,"lng":0.1897380},{"lat":51.1165430,"lng":0.1895020},{"lat":51.1160980,"lng":0.1883570},{"lat":51.1148280,"lng":0.1881870},{"lat":51.1147480,"lng":0.1878870},{"lat":51.1135040,"lng":0.1872860},{"lat":51.1133380,"lng":0.1875270},{"lat":51.1133360,"lng":0.1877450},{"lat":51.1130370,"lng":0.1883060},{"lat":51.1130570,"lng":0.1885550},{"lat":51.1128070,"lng":0.1881830},{"lat":51.1122870,"lng":0.1862280},{"lat":51.1123770,"lng":0.1859210},{"lat":51.1111660,"lng":0.1856970},{"lat":51.1101370,"lng":0.1852060},{"lat":51.1097080,"lng":0.1866250},{"lat":51.1093260,"lng":0.1892160},{"lat":51.1084340,"lng":0.1909160},{"lat":51.1080770,"lng":0.1911590},{"lat":51.1069680,"lng":0.1898220},{"lat":51.1066070,"lng":0.1897210},{"lat":51.1063340,"lng":0.1898460},{"lat":51.1058780,"lng":0.1897350},{"lat":51.1057170,"lng":0.1887450},{"lat":51.1058030,"lng":0.1868020},{"lat":51.1056060,"lng":0.1865870},{"lat":51.1040370,"lng":0.1856790},{"lat":51.1028580,"lng":0.1855300},{"lat":51.1014880,"lng":0.1867990},{"lat":51.1009480,"lng":0.1869220},{"lat":51.1002470,"lng":0.1867130},{"lat":51.0994470,"lng":0.1867910},{"lat":51.0979070,"lng":0.1855520},{"lat":51.0975380,"lng":0.1857440},{"lat":51.0970030,"lng":0.1868120},{"lat":51.0963850,"lng":0.1891900},{"lat":51.0963840,"lng":0.1898080},{"lat":51.0967350,"lng":0.1914100},{"lat":51.0966950,"lng":0.1917140},{"lat":51.0968730,"lng":0.1932920},{"lat":51.0976080,"lng":0.1936830},{"lat":51.0990060,"lng":0.1951050},{"lat":51.1005980,"lng":0.1954440},{"lat":51.1019780,"lng":0.1963750},{"lat":51.1029280,"lng":0.1972420},{"lat":51.1030960,"lng":0.1972280},{"lat":51.1035060,"lng":0.1977150},{"lat":51.1074080,"lng":0.1996290},{"lat":51.1070330,"lng":0.2006020},{"lat":51.1065880,"lng":0.2059970},{"lat":51.1075960,"lng":0.2069050},{"lat":51.1084870,"lng":0.2081060},{"lat":51.1086570,"lng":0.2100850},{"lat":51.1079860,"lng":0.2128690},{"lat":51.1076680,"lng":0.2148820},{"lat":51.1064480,"lng":0.2141130},{"lat":51.1051630,"lng":0.2146720},{"lat":51.1052860,"lng":0.2158170},{"lat":51.1054570,"lng":0.2164760},{"lat":51.1054780,"lng":0.2172050},{"lat":51.1050960,"lng":0.2188160},{"lat":51.1042330,"lng":0.2181220},{"lat":51.1029460,"lng":0.2176950},{"lat":51.1015670,"lng":0.2175280},{"lat":51.1001360,"lng":0.2179180},{"lat":51.0996880,"lng":0.2177320},{"lat":51.0993960,"lng":0.2179990},{"lat":51.0996180,"lng":0.2187070},{"lat":51.0995630,"lng":0.2190620},{"lat":51.0981970,"lng":0.2194970},{"lat":51.0973080,"lng":0.2188750},{"lat":51.0967580,"lng":0.2181020},{"lat":51.0965880,"lng":0.2168300},{"lat":51.0957570,"lng":0.2161920},{"lat":51.0951780,"lng":0.2138790},{"lat":51.0947430,"lng":0.2136520},{"lat":51.0944560,"lng":0.2137650},{"lat":51.0941170,"lng":0.2130360},{"lat":51.0920270,"lng":0.2098160},{"lat":51.0914330,"lng":0.2087620},{"lat":51.0899480,"lng":0.2055020},{"lat":51.0894570,"lng":0.2052930},{"lat":51.0893470,"lng":0.2046410},{"lat":51.0898870,"lng":0.2027120},{"lat":51.0897680,"lng":0.2023540},{"lat":51.0889880,"lng":0.2016230},{"lat":51.0890930,"lng":0.2013020},{"lat":51.1286560,"lng":0.1528590},{"lat":51.1284080,"lng":0.1530830},{"lat":51.1276360,"lng":0.1541890},{"lat":51.1258380,"lng":0.1543620},{"lat":51.1255680,"lng":0.1575360},{"lat":51.1251860,"lng":0.1575390},{"lat":51.1236860,"lng":0.1608480},{"lat":51.1233330,"lng":0.1605820},{"lat":51.1225480,"lng":0.1610770},{"lat":51.1222280,"lng":0.1625170},{"lat":51.1224080,"lng":0.1634670},{"lat":51.1239040,"lng":0.1671460},{"lat":51.1240380,"lng":0.1677170},{"lat":51.1238360,"lng":0.1683650},{"lat":51.1241370,"lng":0.1695460},{"lat":51.1240170,"lng":0.1702350},{"lat":51.1232870,"lng":0.1707930},{"lat":51.1223170,"lng":0.1731580},{"lat":51.1214870,"lng":0.1738710},{"lat":51.1221860,"lng":0.1740370},{"lat":51.1226870,"lng":0.1743560},{"lat":51.1233580,"lng":0.1749050},{"lat":51.1238060,"lng":0.1755560},{"lat":51.1239640,"lng":0.1781260},{"lat":51.1242770,"lng":0.1790590},{"lat":51.1243380,"lng":0.1802520},{"lat":51.1247970,"lng":0.1813010},{"lat":51.1250440,"lng":0.1825760},{"lat":51.1249680,"lng":0.1841950},{"lat":51.1250970,"lng":0.1846750},{"lat":51.1259030,"lng":0.1849820},{"lat":51.1262060,"lng":0.1854670},{"lat":51.1262570,"lng":0.1860090},{"lat":51.1258380,"lng":0.1874100},{"lat":51.1261480,"lng":0.1888190},{"lat":51.1262680,"lng":0.1910920},{"lat":51.1246570,"lng":0.1911730},{"lat":51.1227470,"lng":0.1899810},{"lat":51.1223770,"lng":0.1895920},{"lat":51.1215580,"lng":0.1891840},{"lat":51.1213930,"lng":0.1888320},{"lat":51.1212050,"lng":0.1888300},{"lat":51.1207340,"lng":0.1881380},{"lat":51.1199550,"lng":0.1872400},{"lat":51.1197250,"lng":0.1872740},{"lat":51.1194930,"lng":0.1866920},{"lat":51.1191480,"lng":0.1861730},{"lat":51.1182460,"lng":0.1854250},{"lat":51.1182580,"lng":0.1852740},{"lat":51.1165580,"lng":0.1897150},{"lat":51.1166480,"lng":0.1915920},{"lat":51.1164460,"lng":0.1940180},{"lat":51.1160460,"lng":0.1941350},{"lat":51.1152280,"lng":0.1937690},{"lat":51.1150130,"lng":0.1939720},{"lat":51.1149380,"lng":0.1970870},{"lat":51.1145360,"lng":0.1992150},{"lat":51.1145370,"lng":0.2010760},{"lat":51.1150770,"lng":0.2048450},{"lat":51.1147960,"lng":0.2049390},{"lat":51.1141680,"lng":0.2046520},{"lat":51.1130180,"lng":0.2031930},{"lat":51.1130030,"lng":0.2029820},{"lat":51.1118060,"lng":0.2011370},{"lat":51.1097870,"lng":0.2003160},{"lat":51.1097380,"lng":0.2004050},{"lat":51.1079660,"lng":0.1997460},{"lat":51.1076030,"lng":0.1999120},{"lat":51.1075460,"lng":0.1997650},{"lat":51.1074270,"lng":0.1997480},{"lat":51.0955680,"lng":0.1704520},{"lat":51.0960060,"lng":0.1712490},{"lat":51.0964980,"lng":0.1723270},{"lat":51.0972230,"lng":0.1731720},{"lat":51.0975270,"lng":0.1736070},{"lat":51.0979880,"lng":0.1739050},{"lat":51.0987080,"lng":0.1751320},{"lat":51.0995180,"lng":0.1754100},{"lat":51.0997070,"lng":0.1760720},{"lat":51.1000980,"lng":0.1765790},{"lat":51.1006930,"lng":0.1773520},{"lat":51.1012960,"lng":0.1783050},{"lat":51.1023070,"lng":0.1799860},{"lat":51.1026270,"lng":0.1802360},{"lat":51.1029430,"lng":0.1803620},{"lat":51.1063080,"lng":0.1807520}]
-  },
+  
   {
     id:36, name:"Dover to Deal",
     aonb:"kent-downs", aonbLabel:"Kent Downs AONB",
@@ -1119,6 +1119,69 @@ var ROUTES = [
       {lat:51.9500,lng:1.0200,name:"River Stour Water Meadows",icon:"🌿",history:"The ancient water meadows beside the River Stour between Flatford and Dedham are managed by the National Trust and form the core of the Constable Country landscape. These flat, open meadows flood in winter, providing habitat for wading birds and wildfowl. The quality of light over these meadows — clear, luminous, ever-changing — was what drew Constable back to this valley throughout his life."}
     ],
     waypoints:[{"lat":51.9490454,"lng":1.0452779},{"lat":51.9486261,"lng":1.0441033},{"lat":51.9488990,"lng":1.0418113},{"lat":51.9490274,"lng":1.0394548},{"lat":51.9490744,"lng":1.0363288},{"lat":51.9520919,"lng":1.0370240},{"lat":51.9529001,"lng":1.0322753},{"lat":51.9539663,"lng":1.0319106},{"lat":51.9535899,"lng":1.0312483},{"lat":51.9529301,"lng":1.0293662},{"lat":51.9537517,"lng":1.0271472},{"lat":51.9533410,"lng":1.0247542},{"lat":51.9534653,"lng":1.0225428},{"lat":51.9548878,"lng":1.0223110},{"lat":51.9564309,"lng":1.0221965},{"lat":51.9573755,"lng":1.0213138},{"lat":51.9584126,"lng":1.0207649},{"lat":51.9595657,"lng":1.0196415},{"lat":51.9598635,"lng":1.0198617},{"lat":51.9602184,"lng":1.0196126},{"lat":51.9610480,"lng":1.0201415},{"lat":51.9622807,"lng":1.0202972},{"lat":51.9626393,"lng":1.0194660},{"lat":51.9635641,"lng":1.0184726},{"lat":51.9640667,"lng":1.0168503},{"lat":51.9647674,"lng":1.0149501},{"lat":51.9654805,"lng":1.0147613},{"lat":51.9657573,"lng":1.0140519},{"lat":51.9678058,"lng":1.0130792},{"lat":51.9668698,"lng":1.0114330},{"lat":51.9663011,"lng":1.0103756},{"lat":51.9659186,"lng":1.0103864},{"lat":51.9654077,"lng":1.0092602},{"lat":51.9645768,"lng":1.0096595},{"lat":51.9639759,"lng":1.0089822},{"lat":51.9635848,"lng":1.0080097},{"lat":51.9638888,"lng":1.0057915},{"lat":51.9638874,"lng":1.0036440},{"lat":51.9639870,"lng":1.0015031},{"lat":51.9640866,"lng":0.9993623},{"lat":51.9641755,"lng":0.9980761},{"lat":51.9638010,"lng":0.9964496},{"lat":51.9632556,"lng":0.9940292},{"lat":51.9626992,"lng":0.9942469},{"lat":51.9616740,"lng":0.9938873},{"lat":51.9611942,"lng":0.9933794},{"lat":51.9602370,"lng":0.9934430},{"lat":51.9589567,"lng":0.9933940},{"lat":51.9589889,"lng":0.9947791},{"lat":51.9589649,"lng":0.9961605},{"lat":51.9598627,"lng":0.9979156},{"lat":51.9605529,"lng":0.9999452},{"lat":51.9607298,"lng":1.0005029},{"lat":51.9615241,"lng":1.0015387},{"lat":51.9620918,"lng":1.0039606},{"lat":51.9618891,"lng":1.0048570},{"lat":51.9618471,"lng":1.0056185},{"lat":51.9612492,"lng":1.0065793},{"lat":51.9613695,"lng":1.0071515},{"lat":51.9624166,"lng":1.0079678},{"lat":51.9621844,"lng":1.0091351},{"lat":51.9618100,"lng":1.0101473},{"lat":51.9613667,"lng":1.0098992},{"lat":51.9610647,"lng":1.0102794},{"lat":51.9611169,"lng":1.0121936},{"lat":51.9606881,"lng":1.0126926},{"lat":51.9606297,"lng":1.0132164},{"lat":51.9602075,"lng":1.0134611},{"lat":51.9598336,"lng":1.0144550},{"lat":51.9593198,"lng":1.0156397},{"lat":51.9589172,"lng":1.0164316},{"lat":51.9591016,"lng":1.0175722},{"lat":51.9593037,"lng":1.0180225},{"lat":51.9596656,"lng":1.0183744},{"lat":51.9594183,"lng":1.0192494},{"lat":51.9595432,"lng":1.0196399},{"lat":51.9583794,"lng":1.0207445},{"lat":51.9573750,"lng":1.0213320},{"lat":51.9564422,"lng":1.0221972},{"lat":51.9548771,"lng":1.0222921},{"lat":51.9534550,"lng":1.0225057},{"lat":51.9533074,"lng":1.0247519},{"lat":51.9537634,"lng":1.0271298},{"lat":51.9529207,"lng":1.0292927},{"lat":51.9535903,"lng":1.0312302},{"lat":51.9540004,"lng":1.0318947},{"lat":51.9528898,"lng":1.0322382},{"lat":51.9520802,"lng":1.0370414},{"lat":51.9490636,"lng":1.0363099},{"lat":51.9490162,"lng":1.0394541},{"lat":51.9488766,"lng":1.0418097},{"lat":51.9486369,"lng":1.0441222},{"lat":51.9490567,"lng":1.0452786}]
+  },
+  {
+    id:39, name:"Eridge & Harrison\'s Rocks Circular",
+    aonb:"high-weald", aonbLabel:"High Weald AONB",
+    region:"Eridge, East Sussex",
+    difficulty:"moderate", miles:"10.5", elevationM:"280", hours:"4–5",
+    transport:"train",
+    train:{station:"Eridge",stationLat:51.0891,stationLng:0.2013,line:"Southeastern · London Bridge",walkMins:1},
+    trainEnd:null,
+    bus:null, isNationalRail:true, gpxSource:"uploaded",
+    description:"A superb circular walk from Eridge station through the heart of the High Weald, passing the extraordinary sandstone outcrops of Harrison\'s Rocks and the ancient woodland of Eridge Park. The route takes in a heritage railway, two nature reserves and some of the finest High Weald scenery in East Sussex.",
+    highlights:["Harrison\'s Rocks","Eridge Park","Ashdown Forest edge","High Weald woodland","Broadwater Forest"],
+    tags:["High Weald","Woodland","Sandstone","Circular","East Sussex"],
+    highlightMarkers:[
+      {lat:51.0891,lng:0.2013,name:"Eridge Station",icon:"🚂",history:"Eridge station is one of the finest Victorian rural stations in the South East, with its original buildings intact. The station sits at the heart of the High Weald — a landscape of ancient oak woodland, sandstone ridges and deep ghylls (ravines) unique to this part of England."},
+      {lat:51.1000,lng:0.2200,name:"Eridge Park",icon:"🌳",history:"The historic Eridge Park estate has been here since Norman times, mentioned in Domesday Book. The ancient woodland contains veteran oaks estimated at over 500 years old. The estate is the seat of the Marquess of Abergavenny."},
+      {lat:51.1150,lng:0.2600,name:"Harrison\'s Rocks",icon:"🧗",history:"The dramatic sandstone outcrops at Harrison\'s Rocks rise up to 10 metres from the forest floor. Formed 130 million years ago from Ardingly Sandstone, these extraordinary formations are a legendary rock-climbing training ground used by many of Britain\'s finest climbers, including many who have gone on to climb in the Himalayas."},
+      {lat:51.1100,lng:0.2400,name:"Broadwater Forest",icon:"🌿",history:"Broadwater Forest is an ancient woodland SSSI on the edge of Ashdown Forest. The forest contains rare veteran trees, outstanding lichen communities and breeding populations of marsh tit, nuthatch and treecreeper. The ghylls (stream-cut ravines) support nationally rare mosses and liverworts."},
+      {lat:51.0940,lng:0.2400,name:"Frant Village",icon:"🏡",history:"The beautiful village of Frant sits on a ridge overlooking the High Weald, with panoramic views south into the Rother Valley. The village green, church and historic inns are characteristic of the High Weald — a landscape little changed since the 13th century."}
+    ],
+    waypoints:[{"lat":51.0890960,"lng":0.2013270},{"lat":51.0889670,"lng":0.2016690},{"lat":51.0885680,"lng":0.2013100},{"lat":51.0888180,"lng":0.1998590},{"lat":51.0895580,"lng":0.1978320},{"lat":51.0895770,"lng":0.1973330},{"lat":51.0893970,"lng":0.1970110},{"lat":51.0891170,"lng":0.1968620},{"lat":51.0888080,"lng":0.1961740},{"lat":51.0880630,"lng":0.1957920},{"lat":51.0835850,"lng":0.1922000},{"lat":51.0828640,"lng":0.1909480},{"lat":51.0825650,"lng":0.1896100},{"lat":51.0821850,"lng":0.1891140},{"lat":51.0826530,"lng":0.1884120},{"lat":51.0832980,"lng":0.1879830},{"lat":51.0835060,"lng":0.1874850},{"lat":51.0852580,"lng":0.1866340},{"lat":51.0866380,"lng":0.1850450},{"lat":51.0877680,"lng":0.1851220},{"lat":51.0885460,"lng":0.1841880},{"lat":51.0894960,"lng":0.1821650},{"lat":51.0904080,"lng":0.1794290},{"lat":51.0905930,"lng":0.1792020},{"lat":51.0912980,"lng":0.1774470},{"lat":51.0920560,"lng":0.1748350},{"lat":51.0925070,"lng":0.1723860},{"lat":51.0932270,"lng":0.1718250},{"lat":51.0937760,"lng":0.1708190},{"lat":51.0940180,"lng":0.1707520},{"lat":51.0946180,"lng":0.1702430},{"lat":51.0949330,"lng":0.1697620},{"lat":51.0952060,"lng":0.1699370},{"lat":51.0956670,"lng":0.1689560},{"lat":51.0966880,"lng":0.1671950},{"lat":51.0975760,"lng":0.1691660},{"lat":51.0977130,"lng":0.1701120},{"lat":51.0997560,"lng":0.1733550},{"lat":51.1000870,"lng":0.1735480},{"lat":51.1006960,"lng":0.1743680},{"lat":51.1009180,"lng":0.1741820},{"lat":51.1023460,"lng":0.1762290},{"lat":51.1034180,"lng":0.1774470},{"lat":51.1045730,"lng":0.1790320},{"lat":51.1063070,"lng":0.1807570},{"lat":51.1065280,"lng":0.1811850},{"lat":51.1070680,"lng":0.1828120},{"lat":51.1078080,"lng":0.1822500},{"lat":51.1087170,"lng":0.1819820},{"lat":51.1102780,"lng":0.1826290},{"lat":51.1103430,"lng":0.1828720},{"lat":51.1100560,"lng":0.1846950},{"lat":51.1101570,"lng":0.1851960},{"lat":51.1106370,"lng":0.1855460},{"lat":51.1123630,"lng":0.1859420},{"lat":51.1122880,"lng":0.1862220},{"lat":51.1128270,"lng":0.1881930},{"lat":51.1146470,"lng":0.1856810},{"lat":51.1154770,"lng":0.1852520},{"lat":51.1159080,"lng":0.1852740},{"lat":51.1166280,"lng":0.1855130},{"lat":51.1177330,"lng":0.1852720},{"lat":51.1180780,"lng":0.1854020},{"lat":51.1182460,"lng":0.1852290},{"lat":51.1178080,"lng":0.1877530},{"lat":51.1172560,"lng":0.1880490},{"lat":51.1172380,"lng":0.1883620},{"lat":51.1169380,"lng":0.1887160},{"lat":51.1168960,"lng":0.1897690},{"lat":51.1167460,"lng":0.1897380},{"lat":51.1165430,"lng":0.1895020},{"lat":51.1160980,"lng":0.1883570},{"lat":51.1148280,"lng":0.1881870},{"lat":51.1147480,"lng":0.1878870},{"lat":51.1135040,"lng":0.1872860},{"lat":51.1133380,"lng":0.1875270},{"lat":51.1133360,"lng":0.1877450},{"lat":51.1130370,"lng":0.1883060},{"lat":51.1130570,"lng":0.1885550},{"lat":51.1128070,"lng":0.1881830},{"lat":51.1122870,"lng":0.1862280},{"lat":51.1123770,"lng":0.1859210},{"lat":51.1111660,"lng":0.1856970},{"lat":51.1101370,"lng":0.1852060},{"lat":51.1097080,"lng":0.1866250},{"lat":51.1093260,"lng":0.1892160},{"lat":51.1084340,"lng":0.1909160},{"lat":51.1080770,"lng":0.1911590},{"lat":51.1069680,"lng":0.1898220},{"lat":51.1066070,"lng":0.1897210},{"lat":51.1063340,"lng":0.1898460},{"lat":51.1058780,"lng":0.1897350},{"lat":51.1057170,"lng":0.1887450},{"lat":51.1058030,"lng":0.1868020},{"lat":51.1056060,"lng":0.1865870},{"lat":51.1040370,"lng":0.1856790},{"lat":51.1028580,"lng":0.1855300},{"lat":51.1014880,"lng":0.1867990},{"lat":51.1009480,"lng":0.1869220},{"lat":51.1002470,"lng":0.1867130},{"lat":51.0994470,"lng":0.1867910},{"lat":51.0979070,"lng":0.1855520},{"lat":51.0975380,"lng":0.1857440},{"lat":51.0970030,"lng":0.1868120},{"lat":51.0963850,"lng":0.1891900},{"lat":51.0963840,"lng":0.1898080},{"lat":51.0967350,"lng":0.1914100},{"lat":51.0966950,"lng":0.1917140},{"lat":51.0968730,"lng":0.1932920},{"lat":51.0976080,"lng":0.1936830},{"lat":51.0990060,"lng":0.1951050},{"lat":51.1005980,"lng":0.1954440},{"lat":51.1019780,"lng":0.1963750},{"lat":51.1029280,"lng":0.1972420},{"lat":51.1030960,"lng":0.1972280},{"lat":51.1035060,"lng":0.1977150},{"lat":51.1074080,"lng":0.1996290},{"lat":51.1070330,"lng":0.2006020},{"lat":51.1065880,"lng":0.2059970},{"lat":51.1075960,"lng":0.2069050},{"lat":51.1084870,"lng":0.2081060},{"lat":51.1086570,"lng":0.2100850},{"lat":51.1079860,"lng":0.2128690},{"lat":51.1076680,"lng":0.2148820},{"lat":51.1064480,"lng":0.2141130},{"lat":51.1051630,"lng":0.2146720},{"lat":51.1052860,"lng":0.2158170},{"lat":51.1054570,"lng":0.2164760},{"lat":51.1054780,"lng":0.2172050},{"lat":51.1050960,"lng":0.2188160},{"lat":51.1042330,"lng":0.2181220},{"lat":51.1029460,"lng":0.2176950},{"lat":51.1015670,"lng":0.2175280},{"lat":51.1001360,"lng":0.2179180},{"lat":51.0996880,"lng":0.2177320},{"lat":51.0993960,"lng":0.2179990},{"lat":51.0996180,"lng":0.2187070},{"lat":51.0995630,"lng":0.2190620},{"lat":51.0981970,"lng":0.2194970},{"lat":51.0973080,"lng":0.2188750},{"lat":51.0967580,"lng":0.2181020},{"lat":51.0965880,"lng":0.2168300},{"lat":51.0957570,"lng":0.2161920},{"lat":51.0951780,"lng":0.2138790},{"lat":51.0947430,"lng":0.2136520},{"lat":51.0944560,"lng":0.2137650},{"lat":51.0941170,"lng":0.2130360},{"lat":51.0920270,"lng":0.2098160},{"lat":51.0914330,"lng":0.2087620},{"lat":51.0899480,"lng":0.2055020},{"lat":51.0894570,"lng":0.2052930},{"lat":51.0893470,"lng":0.2046410},{"lat":51.0898870,"lng":0.2027120},{"lat":51.0897680,"lng":0.2023540},{"lat":51.0889880,"lng":0.2016230},{"lat":51.0890930,"lng":0.2013020}]
+  },
+  {
+    id:40, name:"Cookham to Maidenhead via the Thames",
+    aonb:"chilterns", aonbLabel:"Chilterns AONB",
+    region:"Cookham, Berkshire",
+    difficulty:"moderate", miles:"10.4", elevationM:"120", hours:"4–4.5",
+    transport:"train",
+    train:{station:"Cookham",stationLat:51.5564,stationLng:-0.7156,line:"Great Western Railway · London Paddington",walkMins:5},
+    trainEnd:{station:"Maidenhead",stationLat:51.5189,stationLng:-0.7178,line:"Great Western Railway · London Paddington",walkMins:4},
+    bus:null, isNationalRail:true, gpxSource:"uploaded",
+    description:"A beautiful linear walk from Cookham — the village made famous by painter Stanley Spencer — along the Thames through some of the most celebrated river scenery in England. The route passes Cliveden Woods, Formosa Island and the elegant riverside meadows before arriving in Maidenhead.",
+    highlights:["Cookham village","Cliveden Woods","River Thames meadows","Boulters Lock","Maidenhead Bridge"],
+    tags:["Thames","Chilterns","Linear","Riverside","Stanley Spencer"],
+    highlightMarkers:[
+      {lat:51.5576,lng:-0.7158,name:"Cookham Village",icon:"🏡",history:"Cookham is one of the most beautiful villages on the Thames and was the lifelong home of the eccentric visionary painter Stanley Spencer (1891-1959). Spencer painted Cookham obsessively — his most famous work, The Resurrection, Cookham (1924-27), depicts the dead rising from their graves in the village churchyard. The Stanley Spencer Gallery in the village is housed in a converted Methodist chapel."},
+      {lat:51.5700,lng:-0.7000,name:"Cliveden Woods & Reach",icon:"🌳",history:"Cliveden Reach is widely regarded as the most beautiful stretch of the River Thames. The beech woods of Cliveden hang above the chalk cliffs above the river — a National Trust landscape that appears in countless paintings and photographs. Above the woods sits Cliveden House, the great mansion where the Profumo Affair began in 1961."},
+      {lat:51.5500,lng:-0.7100,name:"Formosa Island",icon:"🌊",history:"Formosa Island is one of the largest private islands on the Thames — a beautiful wooded island near Cookham that sits in the river between the main channel and a backwater. The area around here is one of the richest habitats on the Thames for water voles, kingfishers and otters."},
+      {lat:51.5240,lng:-0.7170,name:"Boulters Lock",icon:"⚓",history:"Boulters Lock is one of the most famous locks on the Thames and was immortalised in E.J. Gregory\'s 1897 painting Boulters Lock, Sunday Afternoon, showing the Edwardian pleasure boats jammed into the lock on a summer day. The lock and weir create a dramatic river setting just north of Maidenhead."},
+      {lat:51.5189,lng:-0.7178,name:"Maidenhead Bridge",icon:"🏛️",history:"The elegant Maidenhead Railway Bridge (1838) was designed by Isambard Kingdom Brunel and features the flattest and widest brick arches ever built. Turner painted it in Rain, Steam and Speed (1844) — perhaps the most famous railway painting in the world. The bridge is still in daily use by GWR trains."}
+    ],
+    waypoints:[{"lat":51.5576060,"lng":-0.7217970},{"lat":51.5575470,"lng":-0.7225790},{"lat":51.5569680,"lng":-0.7227800},{"lat":51.5565080,"lng":-0.7247590},{"lat":51.5567280,"lng":-0.7274220},{"lat":51.5573870,"lng":-0.7300830},{"lat":51.5578170,"lng":-0.7327410},{"lat":51.5584070,"lng":-0.7326520},{"lat":51.5587780,"lng":-0.7322240},{"lat":51.5590930,"lng":-0.7348420},{"lat":51.5589850,"lng":-0.7353500},{"lat":51.5597840,"lng":-0.7381080},{"lat":51.5601850,"lng":-0.7399000},{"lat":51.5597850,"lng":-0.7415830},{"lat":51.5595230,"lng":-0.7422220},{"lat":51.5597080,"lng":-0.7425630},{"lat":51.5597660,"lng":-0.7434750},{"lat":51.5601380,"lng":-0.7448440},{"lat":51.5594980,"lng":-0.7472050},{"lat":51.5597880,"lng":-0.7518320},{"lat":51.5603460,"lng":-0.7538980},{"lat":51.5600260,"lng":-0.7541550},{"lat":51.5598180,"lng":-0.7561090},{"lat":51.5591030,"lng":-0.7587220},{"lat":51.5586280,"lng":-0.7616270},{"lat":51.5588160,"lng":-0.7620750},{"lat":51.5597470,"lng":-0.7626160},{"lat":51.5623670,"lng":-0.7576150},{"lat":51.5623260,"lng":-0.7551490},{"lat":51.5636880,"lng":-0.7529120},{"lat":51.5636580,"lng":-0.7518330},{"lat":51.5646730,"lng":-0.7516620},{"lat":51.5652360,"lng":-0.7512370},{"lat":51.5662770,"lng":-0.7472060},{"lat":51.5660080,"lng":-0.7466450},{"lat":51.5668860,"lng":-0.7444560},{"lat":51.5676830,"lng":-0.7430420},{"lat":51.5686960,"lng":-0.7396050},{"lat":51.5690770,"lng":-0.7387480},{"lat":51.5698960,"lng":-0.7381480},{"lat":51.5705380,"lng":-0.7365120},{"lat":51.5708560,"lng":-0.7361790},{"lat":51.5717680,"lng":-0.7333470},{"lat":51.5722230,"lng":-0.7312820},{"lat":51.5727570,"lng":-0.7276770},{"lat":51.5754280,"lng":-0.7294350},{"lat":51.5769680,"lng":-0.7265120},{"lat":51.5773180,"lng":-0.7233800},{"lat":51.5771270,"lng":-0.7210220},{"lat":51.5773180,"lng":-0.7190090},{"lat":51.5768030,"lng":-0.7169920},{"lat":51.5760660,"lng":-0.7156150},{"lat":51.5730770,"lng":-0.7133060},{"lat":51.5711570,"lng":-0.7124460},{"lat":51.5686430,"lng":-0.7123120},{"lat":51.5652380,"lng":-0.7127820},{"lat":51.5640570,"lng":-0.7115830},{"lat":51.5632570,"lng":-0.7099510},{"lat":51.5625170,"lng":-0.7081020},{"lat":51.5618980,"lng":-0.7077240},{"lat":51.5608080,"lng":-0.7075530},{"lat":51.5600230,"lng":-0.7069920},{"lat":51.5597680,"lng":-0.7082320},{"lat":51.5597360,"lng":-0.7071690},{"lat":51.5582180,"lng":-0.7072030},{"lat":51.5581660,"lng":-0.7050690},{"lat":51.5572080,"lng":-0.7032520},{"lat":51.5568880,"lng":-0.6976760},{"lat":51.5570460,"lng":-0.6962690},{"lat":51.5563260,"lng":-0.6954980},{"lat":51.5560230,"lng":-0.6946320},{"lat":51.5554380,"lng":-0.6939870},{"lat":51.5550180,"lng":-0.6930070},{"lat":51.5551780,"lng":-0.6915470},{"lat":51.5526140,"lng":-0.6917160},{"lat":51.5465880,"lng":-0.6928370},{"lat":51.5451960,"lng":-0.6925750},{"lat":51.5435970,"lng":-0.6933060},{"lat":51.5416970,"lng":-0.6950650},{"lat":51.5399870,"lng":-0.6971230},{"lat":51.5379570,"lng":-0.6982880},{"lat":51.5360970,"lng":-0.6998610},{"lat":51.5352860,"lng":-0.7002170},{"lat":51.5327870,"lng":-0.6999160},{"lat":51.5331880,"lng":-0.6993150},{"lat":51.5325460,"lng":-0.6997860},{"lat":51.5304840,"lng":-0.7002960},{"lat":51.5288570,"lng":-0.7013290},{"lat":51.5265380,"lng":-0.7023120},{"lat":51.5266670,"lng":-0.7039810},{"lat":51.5265340,"lng":-0.7051860},{"lat":51.5256280,"lng":-0.7099150},{"lat":51.5251770,"lng":-0.7107650},{"lat":51.5244730,"lng":-0.7117520},{"lat":51.5236760,"lng":-0.7121470},{"lat":51.5229870,"lng":-0.7175090},{"lat":51.5227880,"lng":-0.7212800},{"lat":51.5224780,"lng":-0.7239890},{"lat":51.5209980,"lng":-0.7225720},{"lat":51.5198170,"lng":-0.7219230},{"lat":51.5194370,"lng":-0.7218810},{"lat":51.5185770,"lng":-0.7226120}]
+  },
+  {
+    id:41, name:"Richmond & Teddington Thames Circular",
+    aonb:"surrey-hills", aonbLabel:"Richmond Park & Thames",
+    region:"Twickenham, Surrey",
+    difficulty:"easy", miles:"6.6", elevationM:"40", hours:"2.5–3",
+    transport:"train",
+    train:{station:"Twickenham",stationLat:51.4491,stationLng:-0.3269,line:"South Western Railway · London Waterloo",walkMins:8},
+    trainEnd:null,
+    bus:null, isNationalRail:true, gpxSource:"uploaded",
+    description:"A beautiful circular walk along both banks of the Thames between Richmond and Teddington, crossing the river at Ham and returning via the towpath. The route passes the famous riverside meadows of Ham, the splendid vista of the Thames from Richmond Hill and the elegant Georgian town of Richmond.",
+    highlights:["Richmond Hill viewpoint","Ham House","Teddington Lock","Thames towpath","Richmond Bridge"],
+    tags:["Thames","Richmond","Circular","Easy","Riverside"],
+    highlightMarkers:[
+      {lat:51.4491,lng:-0.3269,name:"Twickenham",icon:"🏛️",history:"Twickenham sits on a graceful curve of the Thames and was a favourite retreat of 18th-century writers and artists. Alexander Pope built his celebrated grotto here. Horace Walpole\'s Gothic fantasy Strawberry Hill is nearby. The town is now also famous as the home of English rugby."},
+      {lat:51.4430,lng:-0.3120,name:"Ham House",icon:"🏠",history:"Ham House is one of the most complete surviving 17th-century houses in Britain — a magnificent mansion built in 1610 and furnished largely as it was in the 1670s. The formal garden has been faithfully restored to its original 17th-century design. Now managed by the National Trust, it sits right on the Thames towpath."},
+      {lat:51.4230,lng:-0.3120,name:"Teddington Lock",icon:"⚓",history:"Teddington Lock is the largest lock on the Thames and marks the tidal limit of the river — the point where the Thames ceases to be tidal. Below Teddington, the Thames is controlled by the Port of London Authority; above it, by the Environment Agency. The lock complex includes three separate chambers of different sizes."},
+      {lat:51.4632,lng:-0.3007,name:"Richmond Hill Viewpoint",icon:"⛰️",history:"The view from Richmond Hill is the only view in England protected by an Act of Parliament (the Richmond, Ham and Petersham Open Spaces Act 1902). The panorama across the Thames meander towards Windsor has been painted by Turner, Reynolds and countless other artists. It remains almost unchanged from their paintings."},
+      {lat:51.4640000,lng:-0.3013,name:"Richmond Bridge",icon:"🌉",history:"Richmond Bridge (1777) is the oldest surviving Thames bridge in the London area — a beautiful five-arch stone structure that has been widened twice but retains its original character. The view from the bridge across the river to Richmond Hill is one of the most photographed in London."}
+    ],
+    waypoints:[{"lat":51.4329770,"lng":-0.3185230},{"lat":51.4313070,"lng":-0.3213510},{"lat":51.4298470,"lng":-0.3221720},{"lat":51.4296480,"lng":-0.3226640},{"lat":51.4298730,"lng":-0.3226220},{"lat":51.4301350,"lng":-0.3227900},{"lat":51.4305640,"lng":-0.3243580},{"lat":51.4302950,"lng":-0.3249100},{"lat":51.4302350,"lng":-0.3260730},{"lat":51.4303330,"lng":-0.3265020},{"lat":51.4309080,"lng":-0.3269730},{"lat":51.4331360,"lng":-0.3294650},{"lat":51.4337580,"lng":-0.3297240},{"lat":51.4345280,"lng":-0.3296550},{"lat":51.4353980,"lng":-0.3300220},{"lat":51.4362160,"lng":-0.3306680},{"lat":51.4381560,"lng":-0.3317450},{"lat":51.4392780,"lng":-0.3327990},{"lat":51.4393430,"lng":-0.3315920},{"lat":51.4396780,"lng":-0.3313370},{"lat":51.4404760,"lng":-0.3315250},{"lat":51.4408770,"lng":-0.3314860},{"lat":51.4413670,"lng":-0.3316950},{"lat":51.4415260,"lng":-0.3323190},{"lat":51.4424080,"lng":-0.3314420},{"lat":51.4441580,"lng":-0.3304130},{"lat":51.4449530,"lng":-0.3297020},{"lat":51.4455060,"lng":-0.3297670},{"lat":51.4455770,"lng":-0.3294860},{"lat":51.4449780,"lng":-0.3285050},{"lat":51.4457660,"lng":-0.3270160},{"lat":51.4464030,"lng":-0.3251120},{"lat":51.4465160,"lng":-0.3250850},{"lat":51.4467570,"lng":-0.3224080},{"lat":51.4468960,"lng":-0.3225580},{"lat":51.4469380,"lng":-0.3233720},{"lat":51.4470560,"lng":-0.3235690},{"lat":51.4472380,"lng":-0.3232870},{"lat":51.4476630,"lng":-0.3238220},{"lat":51.4479170,"lng":-0.3231770},{"lat":51.4470080,"lng":-0.3220450},{"lat":51.4465280,"lng":-0.3170420},{"lat":51.4472980,"lng":-0.3135000},{"lat":51.4482070,"lng":-0.3103320},{"lat":51.4489980,"lng":-0.3082090},{"lat":51.4499230,"lng":-0.3065920},{"lat":51.4514460,"lng":-0.3045350},{"lat":51.4521170,"lng":-0.3040860},{"lat":51.4527470,"lng":-0.3039160},{"lat":51.4534530,"lng":-0.3040620},{"lat":51.4540780,"lng":-0.3045120},{"lat":51.4548470,"lng":-0.3048930},{"lat":51.4557670,"lng":-0.3056110},{"lat":51.4564770,"lng":-0.3064320},{"lat":51.4567180,"lng":-0.3068840},{"lat":51.4567380,"lng":-0.3079730},{"lat":51.4569230,"lng":-0.3078120},{"lat":51.4579280,"lng":-0.3060120},{"lat":51.4577460,"lng":-0.3057390},{"lat":51.4574880,"lng":-0.3059930},{"lat":51.4571960,"lng":-0.3058190},{"lat":51.4556280,"lng":-0.3040920},{"lat":51.4533280,"lng":-0.3026060},{"lat":51.4526360,"lng":-0.3022690},{"lat":51.4514960,"lng":-0.3022580},{"lat":51.4513830,"lng":-0.3026520},{"lat":51.4495580,"lng":-0.3044870},{"lat":51.4485280,"lng":-0.3058370},{"lat":51.4477180,"lng":-0.3077670},{"lat":51.4465140,"lng":-0.3121860},{"lat":51.4458080,"lng":-0.3162170},{"lat":51.4456160,"lng":-0.3178350},{"lat":51.4455070,"lng":-0.3207960},{"lat":51.4451570,"lng":-0.3221550},{"lat":51.4437570,"lng":-0.3267030},{"lat":51.4429070,"lng":-0.3284680},{"lat":51.4424570,"lng":-0.3291610},{"lat":51.4410360,"lng":-0.3299870},{"lat":51.4399270,"lng":-0.3299060},{"lat":51.4388980,"lng":-0.3294850},{"lat":51.4370460,"lng":-0.3280960},{"lat":51.4361740,"lng":-0.3276360},{"lat":51.4353070,"lng":-0.3273590},{"lat":51.4341380,"lng":-0.3272120},{"lat":51.4328270,"lng":-0.3260710},{"lat":51.4324740,"lng":-0.3254560},{"lat":51.4311680,"lng":-0.3223550},{"lat":51.4311970,"lng":-0.3215150}]
   }
 
 ];
@@ -1127,6 +1190,8 @@ var ROUTES = [
 var diff='', aonb='', transport='';
 var currentRoute=null;
 var map, mainLayers=[];
+var _pubsVisible = false;
+var _currentRoute = null;
 var sheetState='hidden', touchStartY=0;
 var detailState='peek', detailTouchY=0;
 var userLat=null, userLng=null, userMarker=null;
@@ -1333,8 +1398,13 @@ function openDetail(id){
   // Always reset scroll to top when opening a route
   var dScroll = document.getElementById('detailScroll');
   if(dScroll) dScroll.scrollTop = 0;
+  _currentRoute = r;
   plotMain(r);
-  drawPubs(r.id);
+  // Pubs off by default - reset toggle state
+  _pubsVisible = false;
+  var btn = document.getElementById('pubsToggleBtn');
+  if(btn){ btn.classList.remove('active'); btn.querySelector('span:last-child').textContent='Show pubs, cafés & toilets'; }
+  // Don't call drawPubs yet - wait for user to toggle on
   // Fetch weather and elevation for this route
   var startPt = r.waypoints && r.waypoints.length ? r.waypoints[0] : null;
   if(startPt){ fetchWeather(startPt.lat, startPt.lng); fetchElevation(r.waypoints); }
@@ -1342,6 +1412,7 @@ function openDetail(id){
 
 function closeDetail(){
   clearPubs();
+  _pubsVisible = false; _currentRoute = null;
   var dw=document.getElementById('dWeather'); if(dw) dw.innerHTML='';
   var de=document.getElementById('dElevation'); if(de) de.innerHTML='';
   if(_elevMarker&&map){map.removeLayer(_elevMarker);_elevMarker=null;}
@@ -1758,6 +1829,19 @@ function drawElevationChart(el, elevs, pts) {
   },{passive:false});
 }
 
+
+function togglePubsLayer(){
+  var btn = document.getElementById('pubsToggleBtn');
+  _pubsVisible = !_pubsVisible;
+  if(_pubsVisible){
+    if(btn){ btn.classList.add('active'); btn.querySelector('span:last-child').textContent='Hide pubs, cafés & toilets'; }
+    var r = _currentRoute;
+    if(r) drawPubs(r.id);
+  } else {
+    if(btn){ btn.classList.remove('active'); btn.querySelector('span:last-child').textContent='Show pubs, cafés & toilets'; }
+    clearPubs();
+  }
+}
 function clearOverviewPins(){
   _overviewMarkers.forEach(function(m){ if(map) map.removeLayer(m); });
   _overviewMarkers = [];
@@ -1776,7 +1860,7 @@ function plotAllPins(filteredRoutes){
     var pt=r.waypoints[0];
     allPts.push([pt.lat,pt.lng]);
     var icon=L.divIcon({className:'',html:'<div style="width:10px;height:10px;border-radius:50%;background:#2d5a27;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer"></div>',iconSize:[10,10],iconAnchor:[5,5]});
-    var m=L.marker([pt.lat,pt.lng],{icon:icon,zIndexOffset:50}).bindPopup('<b>'+r.name+'</b><br><span style="font-size:12px">Tap to explore</span>').on('click',function(){openDetail(r.id);}).addTo(map);
+    var m=L.marker([pt.lat,pt.lng],{icon:icon,zIndexOffset:50}).on('click',function(){openDetail(r.id);}).addTo(map);
     _overviewMarkers.push(m);
   });
   if(allPts.length) map.fitBounds(L.latLngBounds(allPts),{padding:[60,60],maxZoom:12});
@@ -1887,10 +1971,12 @@ var ROUTE_WILDLIFE = {
   28: 'high_weald',      // Hastings Country Park
   29: 'thames_riverside',// Waltham Abbey
   30: 'chalk_downland',  // Eastbourne to Beachy Head
-  32: 'high_weald',      // Eridge
   36: 'chalk_downland',  // Dover to Deal
   37: 'chalk_downland',
-  38: 'thames_riverside'
+  38: 'thames_riverside',
+  39: 'high_weald',
+  40: 'ancient_woodland',
+  41: 'thames_riverside'
 };
 
 var currentWildlife = [];
@@ -2148,14 +2234,6 @@ var PUB_DATA = {
     {lat:50.7683000,lng:0.2847000,name:"Fusciardi's Ice Cream Parlour",address:"30 Marine Parade, Eastbourne BN22 7AY",type:"cafe",rating:"4.3★",desc:"An Eastbourne legend since 1967 — award-winning Italian gelato on the seafront. 18 flavours, 24 sundaes, breakfasts and lunches.",google:"4.3",source:"Google"},
     {lat:50.749,lng:0.2017,name:"Birling Gap Cafe, NT",address:"Birling Gap, East Dean BN20 0AB",type:"cafe",rating:"4.1★",desc:"A National Trust cafe on the clifftop at Birling Gap open daily. Hot food, drinks and cakes with dramatic views. Useful mid-walk stop.",google:"4.1",source:"Google"}
   ],
-  32: [ // Eridge
-    {lat:51.0891000,lng:0.2008000,name:"The Nevill Crest and Gun, Eridge",address:"Eridge Road, Eridge TN3 9JR",type:"pub",rating:"4.4★",desc:"A beautiful old coaching inn right next to Eridge station. Excellent food, lovely garden.",google:"4.4",source:"Google"},
-    {lat:51.1100,lng:0.2400,name:"The Bald Faced Stag, Frant",address:"High Street, Frant TN3 9DW",type:"pub",rating:"4.3★",desc:"A charming village pub in picturesque Frant on the edge of the High Weald.",google:"4.3",source:"Google"},
-    {lat:51.0940,lng:0.2400,name:"The Abergavenny Arms, Frant",address:"The Green, Frant TN3 9DZ",type:"pub",rating:"4.3★",desc:"A beautiful village pub on the green in Frant, directly on the Eridge circular walk.",google:"4.3",source:"Google"}
-  
-  
-  
-  ],
   36: [ // Dover to Deal
     {lat:51.1280,lng:1.3250,name:"The Blakes of Dover",address:"Castle Street, Dover CT16 1PJ",type:"pub",rating:"4.1★",desc:"A friendly pub in Dover town centre near the castle. Good pre-walk stop.",google:"4.1",source:"Google"},
     {lat:51.1494,lng:1.3862,name:"The Coastguard, St Margarets Bay",address:"St Margarets Bay CT15 6DY",type:"pub",rating:"4.4★",desc:"A superb pub on the beach at St Margarets Bay. Spectacular White Cliffs location.",google:"4.4",source:"Google"},
@@ -2193,6 +2271,26 @@ var PUB_DATA = {
     {lat:51.9588000,lng:0.9936000,name:"The Essex Rose Tea House",address:"High Street, Dedham CO7 6DE",type:"cafe",rating:"4.4★",desc:"A 16th-century tearoom run by Tiptree Jam in Dedham village. Traditional table service, cream teas, breakfasts and lunches. One of the finest tearooms in East Anglia.",google:"4.4",source:"Google"}
   ,
     {lat:51.9588,lng:0.9929,name:"Dedham Vale — Tiptree Jam & Essex Produce",address:"",type:"delicacy",rating:"Local delicacy",desc:"Tiptree (Wilkin & Sons) has made jam in Essex since 1885 and is one of Britain\'s most celebrated food producers. Their Little Scarlet strawberry jam — made from a rare variety grown only in Essex — is served at the Savoy and Windsor Castle. The Essex Rose Tea House in Dedham is run by Tiptree and serves their produce.",google:"",source:""}
+  ],
+  39: [ // Eridge Circular
+    {lat:51.0893,lng:0.2008,name:"The Nevill Crest & Gun",address:"Eridge Road, Eridge TN3 9JR",type:"pub",rating:"4.4★",desc:"A beautiful Brunning & Price coaching inn right at Eridge station. Excellent food, great ales and a lovely garden. The perfect start and finish for the walk.",google:"4.4",source:"Google"},
+    {lat:51.1102,lng:0.2397,name:"The Bald Faced Stag, Frant",address:"High Street, Frant TN3 9DW",type:"pub",rating:"4.3★",desc:"A charming village pub in picturesque Frant, on the walk route. Good ales, excellent food and lovely views over the High Weald.",google:"4.3",source:"Google"},
+    {lat:51.0943,lng:0.2397,name:"The Abergavenny Arms, Frant",address:"The Green, Frant TN3 9DZ",type:"pub",rating:"4.3★",desc:"A handsome village pub on the green at Frant, directly on the Eridge circular route. Excellent food in a beautiful setting.",google:"4.3",source:"Google"},
+    {lat:51.0893,lng:0.2008,name:"Eridge Station toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Eridge station.",google:"",source:""}
+  ],
+  40: [ // Cookham to Maidenhead
+    {lat:51.5576,lng:-0.7155,name:"The Bel and the Dragon, Cookham",address:"High Street, Cookham SL6 9SQ",type:"pub",rating:"4.3★",desc:"A beautiful 15th-century inn in Cookham village at the walk start. Excellent food and ales in a historic setting used by Stanley Spencer himself.",google:"4.3",source:"Google"},
+    {lat:51.5520,lng:-0.7160,name:"The Ferry, Cookham",address:"Sutton Road, Cookham SL6 9SN",type:"pub",rating:"4.2★",desc:"A lovely riverside pub in Cookham with Thames views, close to the walk start. Good food, terrace overlooking the river.",google:"4.2",source:"Google"},
+    {lat:51.5189,lng:-0.7176,name:"The Thames Hotel, Maidenhead",address:"Ray Mead Road, Maidenhead SL6 8NP",type:"pub",rating:"4.1★",desc:"A riverside pub-hotel in Maidenhead at the end of the walk. Good food and drinks with views over the Thames near Boulters Lock.",google:"4.1",source:"Google"},
+    {lat:51.5576,lng:-0.7158,name:"Cookham village car park toilets",address:"",type:"toilets",rating:"",desc:"Public toilets in Cookham village near the walk start.",google:"",source:""},
+    {lat:51.5189,lng:-0.7180,name:"Maidenhead riverside toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Maidenhead riverside near the walk end.",google:"",source:""}
+  ],
+  41: [ // Richmond & Teddington
+    {lat:51.4633,lng:-0.3011,name:"The White Cross, Richmond",address:"Water Lane, Richmond TW9 1TH",type:"pub",rating:"4.3★",desc:"One of Richmond\'s most beloved riverside pubs right on the Thames towpath. At very high tides the ground floor floods — they keep rubber boots behind the bar. Excellent food and ales with unbeatable river views.",google:"4.3",source:"Google"},
+    {lat:51.4491,lng:-0.3267,name:"The White Swan, Twickenham",address:"Riverside, Twickenham TW1 3DN",type:"pub",rating:"4.2★",desc:"A wonderful riverside pub in Twickenham right on the Thames path. Views across the river to Eel Pie Island. Popular with locals and walkers.",google:"4.2",source:"Google"},
+    {lat:51.4430,lng:-0.3118,name:"The Orangery at Ham House",address:"Ham, Richmond TW10 7RS",type:"cafe",rating:"4.2★",desc:"The National Trust cafe at Ham House, housed in the beautiful 17th-century orangery. Excellent tea, cakes and light lunches in a historic garden setting right on the walk route.",google:"4.2",source:"Google"},
+    {lat:51.4633,lng:-0.3011,name:"Richmond riverside public toilets",address:"",type:"toilets",rating:"",desc:"Public toilets on Richmond riverside near the towpath.",google:"",source:""},
+    {lat:51.4230,lng:-0.3122,name:"Teddington Lock toilets",address:"",type:"toilets",rating:"",desc:"Public toilets at Teddington Lock.",google:"",source:""}
   ]
 };
 
@@ -2392,7 +2490,6 @@ var ROUTE_PLANTS = {
   28: 'high_weald',      // Hastings Country Park
   29: 'thames_riverside',// Waltham Abbey
   30: 'chalk_downland',  // Eastbourne to Beachy Head
-  32: 'high_weald',      // Eridge
   36: 'chalk_downland',  // Dover to Deal
   37: 'chalk_downland',
   38: 'thames_riverside'
@@ -2773,4 +2870,7 @@ function shareRoute(){
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 </script>
 </body>
-</html>
+</html,
+  39: 'high_weald',
+  40: 'ancient_woodland',
+  41: 'thames_riverside'>
