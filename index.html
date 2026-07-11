@@ -163,22 +163,31 @@
   .dstat-val { font-size: 15px; font-weight: 700; color: #1a1a18; }
   .dstat-lbl { font-size: 9px; color: #9b9b97; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
   .weather-card { margin: 0 0 16px 0; }
-  .pubs-toggle-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: #f4f2ee; border: 2px solid #e8e6e0;
-    border-radius: 10px; padding: 9px 14px;
-    font-size: 13px; font-weight: 600; color: #4a4a45;
-    cursor: pointer; width: 100%; margin: 0 0 12px 0;
-    transition: background 0.15s, border-color 0.15s;
+  /* Pubs toggle — floating map button */
+  #pubsMapBtn {
+    position: fixed;
+    right: 12px;
+    bottom: 140px;
+    z-index: 25;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: background 0.15s, box-shadow 0.15s;
   }
-  .pubs-toggle-btn.active {
-    background: #e8f0e8; border-color: #2d5a27; color: #2d5a27;
+  #pubsMapBtn.active {
+    background: #2d5a27;
   }
-  .pubs-toggle-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: #c8c6c0; flex-shrink: 0; transition: background 0.15s;
+  #pubsMapBtn.visible {
+    display: flex;
   }
-  .pubs-toggle-btn.active .pubs-toggle-dot { background: #2d5a27; }
   .weather-loading { font-size: 12px; color: #9b9b97; padding: 8px 0; }
   .weather-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 8px; }
   .weather-day { background: #f7f6f3; border-radius: 10px; padding: 8px 4px; text-align: center; }
@@ -225,6 +234,17 @@
   .pftab.pf-protected  { background: #e8d8f8; border-color: #6b21a8; color: #3a1060; }
 
   /* Plant cards */
+  .nature-collapse { margin-top: 20px; border-radius: 12px; overflow: hidden; border: 1px solid #e8e6e0; }
+  .nature-collapse-header {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: #f7f6f3; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 700; color: #4a4a45; text-transform: uppercase;
+    letter-spacing: 0.5px; text-align: left;
+  }
+  .nature-collapse-header:active { background: #eeece8; }
+  .nature-collapse-chevron { font-size: 10px; color: #9b9b97; transition: transform 0.2s; }
+  .nature-collapse-header[aria-expanded="true"] .nature-collapse-chevron { transform: rotate(180deg); }
+  .nature-collapse-body { padding: 14px 14px 4px; }
   .plants-disclaimer { font-size: 11px; color: #9b9b97; background: #f7f6f3; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; line-height: 1.5; }
   .wildlife-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 12px; }
   .wildlife-filters::-webkit-scrollbar { display: none; }
@@ -424,10 +444,6 @@
         <div class="dstat"><div class="dstat-val" id="dTime"></div><div class="dstat-lbl">Time</div></div>
         <div class="dstat"><div class="dstat-val" id="dDiff"></div><div class="dstat-lbl">Grade</div></div>
       </div>
-      <button id="pubsToggleBtn" class="pubs-toggle-btn" onclick="togglePubsLayer()">
-        <span class="pubs-toggle-dot"></span>
-        <span>Show pubs, cafés &amp; toilets</span>
-      </button>
       <div id="dWeather" class="weather-card"></div>
       <div id="dElevation" class="elevation-card"></div>
       <div class="section-title">About this walk</div>
@@ -436,31 +452,44 @@
       <div class="hl-grid"       id="dHighlights"></div>
       
 
-      <div class="section-title" style="margin-top:20px">Plants to look out for</div>
-      <div class="plants-disclaimer">🌿 Always be 100% certain of identification before eating anything. Never pick protected species. Forage responsibly.</div>
-      <div class="plant-filters" id="plantFilters">
-        <button class="pftab pf-active" onclick="filterPlants('all',this)">All</button>
-        <button class="pftab" onclick="filterPlants('edible',this)">🌿 Edible</button>
-        <button class="pftab" onclick="filterPlants('medicinal',this)">💊 Medicinal</button>
-        <button class="pftab" onclick="filterPlants('bushcraft',this)">🪓 Bushcraft</button>
-        <button class="pftab" onclick="filterPlants('poisonous',this)">☠️ Poisonous</button>
-        <button class="pftab" onclick="filterPlants('protected',this)">🔒 Protected</button>
-<button class="pftab" onclick="filterPlants('tree',this)">🌳 Trees</button>
+      <div class="nature-collapse" id="plantsSection">
+        <button class="nature-collapse-header" onclick="toggleSection('plantsBody','plantsSection')" aria-expanded="false">
+          <span>🌿 Plants to look out for</span>
+          <span class="nature-collapse-chevron">▼</span>
+        </button>
+        <div class="nature-collapse-body" id="plantsBody" style="display:none">
+          <div class="plants-disclaimer">🌿 Always be 100% certain of identification before eating anything. Never pick protected species. Forage responsibly.</div>
+          <div class="plant-filters" id="plantFilters">
+            <button class="pftab pf-active" onclick="filterPlants('all',this)">All</button>
+            <button class="pftab" onclick="filterPlants('edible',this)">🌿 Edible</button>
+            <button class="pftab" onclick="filterPlants('medicinal',this)">💊 Medicinal</button>
+            <button class="pftab" onclick="filterPlants('bushcraft',this)">🪓 Bushcraft</button>
+            <button class="pftab" onclick="filterPlants('poisonous',this)">☠️ Poisonous</button>
+            <button class="pftab" onclick="filterPlants('protected',this)">🔒 Protected</button>
+            <button class="pftab" onclick="filterPlants('tree',this)">🌳 Trees</button>
+          </div>
+          <div id="dPlants"></div>
+        </div>
       </div>
-      <div id="dPlants"></div>
-
-      <div class="section-title" style="margin-top:20px">Wildlife to look out for</div>
-      <div class="plants-disclaimer">🦅 Best seen at dawn and dusk. Keep noise low, dogs on leads near ground-nesting birds (March–September).</div>
-      <div class="wildlife-filters" id="wildlifeFilters">
-        <button class="wftab wf-active" onclick="filterWildlife('all',this)">All</button>
-        <button class="wftab" onclick="filterWildlife('bird',this)">🐦 Birds</button>
-        <button class="wftab" onclick="filterWildlife('mammal',this)">🦊 Mammals</button>
-        <button class="wftab" onclick="filterWildlife('butterfly',this)">🦋 Butterflies</button>
-        <button class="wftab" onclick="filterWildlife('reptile',this)">🦎 Reptiles</button>
-        <button class="wftab" onclick="filterWildlife('fish',this)">🐟 Fish & more</button>
-<button class="wftab" onclick="filterWildlife('insect',this)">🪲 Insects</button>
+      <div class="nature-collapse" id="wildlifeSection" style="margin-top:8px">
+        <button class="nature-collapse-header" onclick="toggleSection('wildlifeBody','wildlifeSection')" aria-expanded="false">
+          <span>🦅 Wildlife to look out for</span>
+          <span class="nature-collapse-chevron">▼</span>
+        </button>
+        <div class="nature-collapse-body" id="wildlifeBody" style="display:none">
+          <div class="plants-disclaimer">🦅 Best seen at dawn and dusk. Keep noise low, dogs on leads near ground-nesting birds (March–September).</div>
+          <div class="wildlife-filters" id="wildlifeFilters">
+            <button class="wftab wf-active" onclick="filterWildlife('all',this)">All</button>
+            <button class="wftab" onclick="filterWildlife('bird',this)">🐦 Birds</button>
+            <button class="wftab" onclick="filterWildlife('mammal',this)">🦊 Mammals</button>
+            <button class="wftab" onclick="filterWildlife('butterfly',this)">🦋 Butterflies</button>
+            <button class="wftab" onclick="filterWildlife('reptile',this)">🦎 Reptiles</button>
+            <button class="wftab" onclick="filterWildlife('fish',this)">🐟 Fish & more</button>
+            <button class="wftab" onclick="filterWildlife('insect',this)">🪲 Insects</button>
+          </div>
+          <div id="dWildlife"></div>
+        </div>
       </div>
-      <div id="dWildlife"></div>
     </div>
   </div>
 
@@ -1398,7 +1427,20 @@ function openDetail(id){
   // Always reset scroll to top when opening a route
   var dScroll = document.getElementById('detailScroll');
   if(dScroll) dScroll.scrollTop = 0;
+  // Reset both nature sections: collapsed on mobile, expanded on desktop
+  var isMobile = window.innerWidth < 768;
+  ['plantsBody','wildlifeBody'].forEach(function(bodyId){
+    var sectionId = bodyId === 'plantsBody' ? 'plantsSection' : 'wildlifeSection';
+    var body = document.getElementById(bodyId);
+    var section = document.getElementById(sectionId);
+    if(!body) return;
+    body.style.display = isMobile ? 'none' : 'block';
+    var header = section ? section.querySelector('.nature-collapse-header') : null;
+    if(header) header.setAttribute('aria-expanded', isMobile ? 'false' : 'true');
+  });
   _currentRoute = r;
+  var pubsBtn = document.getElementById('pubsMapBtn');
+  if(pubsBtn){ pubsBtn.classList.add('visible'); pubsBtn.classList.remove('active'); }
   plotMain(r);
   // Pubs off by default - reset toggle state
   _pubsVisible = false;
@@ -1413,6 +1455,8 @@ function openDetail(id){
 function closeDetail(){
   clearPubs();
   _pubsVisible = false; _currentRoute = null;
+  var pubsBtnC = document.getElementById('pubsMapBtn');
+  if(pubsBtnC){ pubsBtnC.classList.remove('visible','active'); }
   var dw=document.getElementById('dWeather'); if(dw) dw.innerHTML='';
   var de=document.getElementById('dElevation'); if(de) de.innerHTML='';
   if(_elevMarker&&map){map.removeLayer(_elevMarker);_elevMarker=null;}
@@ -1831,16 +1875,26 @@ function drawElevationChart(el, elevs, pts) {
 
 
 function togglePubsLayer(){
-  var btn = document.getElementById('pubsToggleBtn');
   _pubsVisible = !_pubsVisible;
+  var mapBtn = document.getElementById('pubsMapBtn');
   if(_pubsVisible){
-    if(btn){ btn.classList.add('active'); btn.querySelector('span:last-child').textContent='Hide pubs, cafés & toilets'; }
+    if(mapBtn) mapBtn.classList.add('active');
     var r = _currentRoute;
     if(r) drawPubs(r.id);
   } else {
-    if(btn){ btn.classList.remove('active'); btn.querySelector('span:last-child').textContent='Show pubs, cafés & toilets'; }
+    if(mapBtn) mapBtn.classList.remove('active');
     clearPubs();
   }
+}
+
+function toggleSection(bodyId, sectionId){
+  var body = document.getElementById(bodyId);
+  var section = document.getElementById(sectionId);
+  if(!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  var header = section ? section.querySelector('.nature-collapse-header') : null;
+  if(header) header.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
 }
 function clearOverviewPins(){
   _overviewMarkers.forEach(function(m){ if(map) map.removeLayer(m); });
@@ -2869,6 +2923,7 @@ function shareRoute(){
 
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 </script>
+<button id="pubsMapBtn" onclick="togglePubsLayer()" title="Toggle pubs, cafés &amp; toilets">🍺</button>
 </body>
 </html,
   39: 'high_weald',
